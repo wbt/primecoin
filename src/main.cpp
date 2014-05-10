@@ -4605,7 +4605,7 @@ void static BitcoinMiner(CWallet *pwallet)
     double dTimeExpectedPrev = 0; // time expected to prime chain last time
     bool fIncrementPrimorial = true; // increase or decrease primorial factor
 
-    try { loop {
+    try { while (true) {
         while (vNodes.empty())
             MilliSleep(1000);
 
@@ -4656,7 +4656,7 @@ void static BitcoinMiner(CWallet *pwallet)
         int64 nPrimeTimerStart = GetTimeMicros();
         Primorial(pminer->nPrimorialMultiplier, bnPrimorial);
 
-        loop
+        while (true)
         {
             unsigned int nTests = 0;
             unsigned int nPrimesHit = 0;

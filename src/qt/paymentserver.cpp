@@ -3,6 +3,7 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#undef loop /* Todo: ugh, remove this when the #define loop is gone from util.h */
 #include <QApplication>
 
 #include "paymentserver.h"
@@ -19,7 +20,9 @@
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QStringList>
+#if QT_VERSION < 0x050000
 #include <QUrl>
+#endif
 
 using namespace boost;
 
