@@ -103,7 +103,7 @@ contains(BITCOIN_NEED_QT_PLUGINS, 1) {
 INCLUDEPATH += src/leveldb/include src/leveldb/helpers
 LIBS += $$PWD/src/leveldb/libleveldb.a $$PWD/src/leveldb/libmemenv.a
 
-LIBS += -lprotobuf -lczmq -lzmq -lpthread -lrt
+LIBS += -Wl,-Bstatic -lprotobuf -lczmq -lzmq -Wl,-Bdynamic -lpthread -lrt
 
 !win32 {
     # we use QMAKE_CXXFLAGS_RELEASE even without RELEASE=1 because we use RELEASE to indicate linking preferences not -O preferences
