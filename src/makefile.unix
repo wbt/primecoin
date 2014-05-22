@@ -6,7 +6,7 @@
 # :=0 --> UPnP support turned off by default at runtime
 # :=1 --> UPnP support turned on by default at runtime
 # :=- --> No UPnP support - miniupnp not required
-USE_UPNP:=0
+USE_UPNP:=-
 
 # :=1 --> Enable IPv6 support
 # :=0 --> Disable IPv6 support
@@ -113,6 +113,9 @@ xLDFLAGS=$(LDHARDENING) $(LDFLAGS)
 
 OBJS= \
     leveldb/libleveldb.a \
+    obj/pool.o \
+    obj/primeserver.o \
+    obj/protocol.pb.o \
     obj/alert.o \
     obj/version.o \
     obj/checkpoints.o \
@@ -156,6 +159,7 @@ test check: test_primecoin FORCE
 #
 MAKEOVERRIDES =
 LIBS += $(CURDIR)/leveldb/libleveldb.a $(CURDIR)/leveldb/libmemenv.a
+LIBS += $(addprefix /usr/local/lib/, libprotobuf.a libczmq.a libzmq.a) -lrt
 DEFS += $(addprefix -I,$(CURDIR)/leveldb/include)
 DEFS += $(addprefix -I,$(CURDIR)/leveldb/helpers)
 leveldb/libleveldb.a:
