@@ -2,25 +2,26 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <string>
+
+#include "util.h"
+#include "streams.h"
 #include "parameters.h"
 
-static const std::string PrimeCoin::currencyName 			= "Primecoin";
-static const std::string PrimeCoin::tickerName 				= "XPM";
-static const int64_t 	 PrimeCoin::forkFromPrimechain 	= 0;
-static const int64_t 	 PrimeCoin::nTargetSpacing 			= 60; // one minute block spacing
-static const int64_t 	 PrimeCoin::nTargetTimespan			= 604800;  // 7 * 24 * 60 * 60 (one week)
+using namespace std;
 
 uint256 PrimeCoin::GetPrimeBlockProof(const CBlockIndex& block)
 {
     uint64_t nFractionalDifficulty = TargetGetFractionalDifficulty(nBits);
     CBigNum bnWork = 256;
+
     for (unsigned int nCount = nTargetMinLength; nCount < TargetGetLength(nBits); nCount++)
         bnWork *= nWorkTransitionRatio;
 
     bnWork *= ((uint64_t) nWorkTransitionRatio) * nFractionalDifficulty;
     bnWork /= (((uint64_t) nWorkTransitionRatio - 1) * nFractionalDifficultyMin + nFractionalDifficulty);
 
-    return bnWork;
+    return bnWork.getuint256();
 }
 
 unsigned int PrimeCoin::GetPrimeWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
@@ -79,7 +80,7 @@ uint256 CBlockHeader::GetHash() const
 // Header hash does not include prime certificate
 uint256 CBlockHeader::GetHeaderHash() const
 {
-    return Hash(BEGIN(nVersion), END(nNonce));
+    return SerializeHash(*this);
 }
 
 /**

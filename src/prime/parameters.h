@@ -13,10 +13,12 @@
 class PrimeCoin {
 
 private:
-	static const int64_t forkFromPrimechain;
-	static const std::string currencyName;
-	static const std::string tickerName;
-	
+	int64_t forkFromPrime = 0;
+	int64_t nTargetSpacing = 60;
+	int64_t nTargetTimespan = 604800;  // 7 * 24 * 60 * 60
+	std::string currencyName = "Primecoin";
+	std::string tickerName = "XPM";
+
 public:
 	uint256 GetPrimeBlockProof(const CBlockIndex& block);
 	unsigned int GetPrimeWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock);
@@ -29,27 +31,8 @@ public:
 	std::string getSmallCurrencyName() { return currencyName; }
 	std::string getLargeCurrencyName() { return currencyName; }
 	std::string getTickerName() { return tickerName; }
-	int64_t forkTime() { return forkFromPrimechain; }
+	int64_t forkTime() { return forkFromPrime; }
 
-};
-
-class PrimeBlock {
-
-public:
-	uint256 hashBlock; // Primecoin: Persist block hash as well
-
-	// Primecoin: proof-of-work certificate
- 	// Multiplier to block hash to derive the probable prime chain (k=0, 1, ...)
- 	// Cunningham Chain of first kind:  hash * multiplier * 2**k - 1
- 	// Cunningham Chain of second kind: hash * multiplier * 2**k + 1
- 	// BiTwin Chain:                    hash * multiplier * 2**k +/- 1
- 	
- 	CBigNum bnPrimeChainMultiplier;
- 	int64_t nMoneySupply;
-
-	uint32_t nPrimeChainType;
-    uint32_t nPrimeChainLength;
-    uint32_t nWorkTransition;
 };
 
 #endif // PRIME_PARAMETERS_H
