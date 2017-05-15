@@ -11,7 +11,6 @@
 #include <pow.h>
 #include <tinyformat.h>
 #include <uint256.h>
-#include "prime/parameters.h"
 
 #include <vector>
 

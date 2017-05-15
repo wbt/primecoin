@@ -6,10 +6,29 @@
 #ifndef BITCOIN_PRIMITIVES_BLOCK_H
 #define BITCOIN_PRIMITIVES_BLOCK_H
 
-#include "prime/parameters.h"
 #include <primitives/transaction.h>
 #include <serialize.h>
 #include <uint256.h>
+#include "prime/bignum.h"
+
+class PrimeBlock {
+public:
+    uint256 hashBlock; // Primecoin: Persist block hash as well
+
+    // Primecoin: proof-of-work certificate
+    // Multiplier to block hash to derive the probable prime chain (k=0, 1, ...)
+    // Cunningham Chain of first kind:  hash * multiplier * 2**k - 1
+    // Cunningham Chain of second kind: hash * multiplier * 2**k + 1
+    // BiTwin Chain:                    hash * multiplier * 2**k +/- 1
+    
+    CBigNum bnPrimeChainMultiplier;
+    int64_t nMoneySupply;
+
+    uint32_t nPrimeChainType;
+    uint32_t nPrimeChainLength;
+    uint32_t nWorkTransition;
+};
+>>>>>>> 72d87cc94... [Reallocation] Preparation for Design Swaps
 
 /** Nodes collect new transactions into a block, hash them into a hash tree,
  * and scan through nonce values to make the block's hash satisfy proof-of-work
