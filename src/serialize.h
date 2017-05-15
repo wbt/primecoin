@@ -544,6 +544,12 @@ inline void Unserialize(Stream& is, T& a)
     a.Unserialize(is);
 }
 
+/**
+ * others derived from vector
+ */
+extern inline unsigned int GetSerializeSize(const std::vector<unsigned char>& v, int nType, int nVersion);
+template<typename Stream> void Serialize(Stream& os, const std::vector<unsigned char>& v, int nType, int nVersion);
+template<typename Stream> void Unserialize(Stream& is, std::vector<unsigned char>& v, int nType, int nVersion);
 
 
 
@@ -723,6 +729,27 @@ void Unserialize(Stream& is, std::pair<K, T>& item)
     Unserialize(is, item.second);
 }
 
+
+
+/**
+ * others derived from vector
+ */
+inline unsigned int GetSerializeSize(const std::vector<unsigned char>& v, int nType, int nVersion)
+{
+    return GetSerializeSize((const std::vector<unsigned char>&)v, nType, nVersion);
+}
+
+template<typename Stream>
+void Serialize(Stream& os, const std::vector<unsigned char>& v, int nType, int nVersion)
+{
+    Serialize(os, (const std::vector<unsigned char>&)v, nType, nVersion);
+}
+
+template<typename Stream>
+void Unserialize(Stream& is, std::vector<unsigned char>& v, int nType, int nVersion)
+{
+    Unserialize(is, (std::vector<unsigned char>&)v, nType, nVersion);
+}
 
 
 /**
