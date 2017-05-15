@@ -11,6 +11,7 @@
 #include <pow.h>
 #include <tinyformat.h>
 #include <uint256.h>
+#include "prime/parameters.h"
 
 #include <vector>
 
@@ -167,7 +168,7 @@ enum BlockStatus: uint32_t {
  * candidates to be the next block. A blockindex may have multiple pprev pointing
  * to it, but at most one of them can be part of the currently active branch.
  */
-class CBlockIndex
+class CBlockIndex : public PrimeBlock
 {
 public:
     //! pointer to the hash of the block, if any. Memory is owned by this CBlockIndex

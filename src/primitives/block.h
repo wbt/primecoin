@@ -6,6 +6,7 @@
 #ifndef BITCOIN_PRIMITIVES_BLOCK_H
 #define BITCOIN_PRIMITIVES_BLOCK_H
 
+#include "prime/parameters.h"
 #include <primitives/transaction.h>
 #include <serialize.h>
 #include <uint256.h>
@@ -17,7 +18,7 @@
  * in the block is a special one that creates a new coin owned by the creator
  * of the block.
  */
-class CBlockHeader
+class CBlockHeader : public PrimeBlock
 {
 public:
     // header
@@ -61,7 +62,7 @@ public:
     }
 
     uint256 GetHash() const;
-    
+
     uint256 GetHeaderHash() const;
 
     int64_t GetBlockTime() const
