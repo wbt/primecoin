@@ -9,12 +9,20 @@
 #include "serialize.h"
 #include "uint256.h"
 #include "version.h"
+#include "arith_uint256.h"
 
 #include <stdexcept>
 #include <stdint.h>
 #include <vector>
 
 #include <openssl/bn.h>
+
+extern const signed char p_util_hexdigit[256]; // defined in util.cpp
+
+inline signed char HexDigit(char c)
+{
+    return p_util_hexdigit[(unsigned char)c];
+}
 
 /** Errors thrown by the bignum class */
 class bignum_error : public std::runtime_error
@@ -231,12 +239,12 @@ public:
     {
         unsigned int nSize = BN_bn2mpi(this, NULL);
         if (nSize < 4)
-            return 0;
+            return ArithToUint256(arith_uint256(0));
         std::vector<unsigned char> vch(nSize);
         BN_bn2mpi(this, &vch[0]);
         if (vch.size() > 4)
             vch[4] &= 0x7f;
-        uint256 n = 0;
+        uint256 n = ArithToUint256(arith_uint256(0));
         for (unsigned int i = 0, j = vch.size()-1; i < sizeof(n) && j >= 4; i++, j--)
             ((unsigned char*)&n)[i] = vch[j];
         return n;
@@ -352,13 +360,13 @@ public:
             psz++;
 
         // hex string to bignum
-        static const signed char phexdigit[256] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,1,2,3,4,5,6,7,8,9,0,0,0,0,0,0, 0,0xa,0xb,0xc,0xd,0xe,0xf,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0xa,0xb,0xc,0xd,0xe,0xf,0,0,0,0,0,0,0,0,0 };
         *this = 0;
-        while (isxdigit(*psz))
+        int n;
+        while ((n = HexDigit(*psz)) != -1)
         {
             *this <<= 4;
-            int n = phexdigit[(unsigned char)*psz++];
             *this += n;
+            ++psz;
         }
         if (fNegative)
             *this = 0 - *this;
@@ -516,9 +524,78 @@ public:
     friend inline const CBigNum operator-(const CBigNum& a, const CBigNum& b);
     friend inline const CBigNum operator/(const CBigNum& a, const CBigNum& b);
     friend inline const CBigNum operator%(const CBigNum& a, const CBigNum& b);
+
+    CBigNum nthRoot(int n) const
+    {
+        assert(n > 1);
+        if (BN_is_zero(this))
+            return 0;
+        assert(!BN_is_negative(this));
+
+        // starting approximation
+        int nRootBits = (BN_num_bits(this) + n - 1) / n;
+        int nStartingBits = std::min(8, nRootBits);
+        CBigNum bnUpper = *this;
+        bnUpper >>= (nRootBits - nStartingBits)*n;
+        CBigNum bnCur = 0;
+        for (int i = nStartingBits - 1; i >= 0; i--)
+        {
+            CBigNum bnNext = bnCur;
+            bnNext += 1 << i;
+            CBigNum bnPower(1);
+            for (int j = 0; j < n; j++)
+                bnPower *= bnNext;
+            if (BN_cmp(&bnPower, &bnUpper) <= 0)
+                bnCur = bnNext;
+        }
+        if (nRootBits == nStartingBits)
+            return bnCur;
+        bnCur <<= nRootBits - nStartingBits;
+
+        // iterate: cur = cur + (*this / cur^^(n-1) - cur)/n
+        CBigNum bnDelta;
+        const CBigNum bnRoot(n);
+        int nTerminate = 0;
+        // this should always converge in fewer steps, but limit just in case
+        for (int it = 0; it < 20; it++)
+        {
+            CBigNum bnDenominator = 1;
+            for (int i = 0; i < n - 1; i++)
+                bnDenominator *= bnCur;
+            bnDelta = *this / bnDenominator - bnCur;
+            if (BN_is_zero(&bnDelta))
+                return bnCur;
+            if (BN_is_negative(&bnDelta))
+            {
+                if (nTerminate == 1)
+                    return bnCur - 1;
+                BN_set_negative(&bnDelta, 0);
+                if (BN_cmp(&bnDelta, &bnRoot) <= 0)
+                {
+                    bnCur -= 1;
+                    nTerminate = -1;
+                    continue;
+                }
+                BN_set_negative(&bnDelta, 1);
+            }
+            else
+            {
+                if (nTerminate == -1)
+                    return bnCur;
+                if (BN_cmp(&bnDelta, &bnRoot) <= 0)
+                {
+                    bnCur += 1;
+                    nTerminate = 1;
+                    continue;
+                }
+            }
+            bnCur += bnDelta / n;
+            nTerminate = 0;
+        }
+        return bnCur;
+    }
+
 };
-
-
 
 inline const CBigNum operator+(const CBigNum& a, const CBigNum& b)
 {
