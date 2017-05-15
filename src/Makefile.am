@@ -124,6 +124,7 @@ BITCOIN_CORE_H = \
   pow.h \
   prime/bignum.h \
   prime/prime.h \
+  prime/parameters.h \
   protocol.h \
   random.h \
   reverse_iterator.h \
@@ -209,6 +210,7 @@ libbitcoin_server_a_SOURCES = \
   policy/policy.cpp \
   policy/rbf.cpp \
   prime/prime.cpp \
+  prime/parameters.cpp \
   pow.cpp \
   rest.cpp \
   rpc/blockchain.cpp \
