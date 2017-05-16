@@ -35,4 +35,6 @@ public:
 
 };
 
+PrimeCoin prime;
+
 #endif // PRIME_PARAMETERS_H

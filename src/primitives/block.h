@@ -63,6 +63,7 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
+        READWRITE(bnPrimeChainMultiplier);
     }
 
     void SetNull()
@@ -73,6 +74,7 @@ public:
         nTime = 0;
         nBits = 0;
         nNonce = 0;
+        bnPrimeChainMultiplier = 0;
     }
 
     bool IsNull() const
@@ -122,6 +124,8 @@ public:
     void SetNull()
     {
         CBlockHeader::SetNull();
+        nPrimeChainType = 0;
+        nPrimeChainLength = 0;
         vtx.clear();
         fChecked = false;
     }
