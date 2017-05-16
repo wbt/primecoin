@@ -235,6 +235,11 @@ public:
         nSequenceId = 0;
         nTimeMax = 0;
 
+        nWorkTransition = 0;
+        nPrimeChainType = 0;
+        nPrimeChainLength = 0;
+        nMoneySupply = 0;
+
         nVersion       = 0;
         hashMerkleRoot = uint256();
         nTime          = 0;
@@ -388,6 +393,9 @@ public:
         if (!(s.GetType() & SER_GETHASH))
             READWRITE(VARINT(_nVersion));
 
+        READWRITE(VARINT(nPrimeChainType));
+        READWRITE(VARINT(nPrimeChainLength));
+        READWRITE(VARINT(nMoneySupply));
         READWRITE(VARINT(nHeight));
         READWRITE(VARINT(nStatus));
         READWRITE(VARINT(nTx));
@@ -405,6 +413,7 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
+        READWRITE(hashBlock);
     }
 
     uint256 GetBlockHash() const

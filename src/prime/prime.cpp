@@ -198,7 +198,7 @@ bool TargetSetFractionalDifficulty(uint64_t nFractionalDifficulty, unsigned int&
         return printf("TargetSetFractionalDifficulty() : difficulty below min");
     uint64_t nFractional = nFractionalDifficultyMax / nFractionalDifficulty;
     if (nFractional > (1u<<nFractionalBits))
-        return printf("TargetSetFractionalDifficulty() : fractional overflow: nFractionalDifficulty=%016"PRI64x, nFractionalDifficulty);
+        return printf("TargetSetFractionalDifficulty() : fractional overflow: nFractionalDifficulty=%ld\n", (long)nFractionalDifficulty);
     nFractional = (1u<<nFractionalBits) - nFractional;
     nBits &= TARGET_LENGTH_MASK;
     nBits |= (unsigned int)nFractional;
@@ -255,7 +255,7 @@ bool TargetGetNext(unsigned int nBits, int64_t nInterval, int64_t nTargetSpacing
 
     uint64_t nFractionalDifficultyNew = UintToArith256(bnFractionalDifficulty.getuint256()).GetLow64();
 
-    printf("TargetGetNext() : nActualSpacing=%d nFractionDiff=%016"PRI64x" nFractionDiffNew=%016"PRI64x"\n", (int)nActualSpacing, nFractionalDifficulty, nFractionalDifficultyNew);
+    printf("TargetGetNext() : nActualSpacing=%d nFractionDiff=%ld nFractionDiffNew=%ld\n", (int)nActualSpacing, (long)nFractionalDifficulty, (long)nFractionalDifficultyNew);
     // Step up length if fractional past threshold
     if (nFractionalDifficultyNew > nFractionalDifficultyThreshold)
     {
@@ -270,7 +270,7 @@ bool TargetGetNext(unsigned int nBits, int64_t nInterval, int64_t nTargetSpacing
     }
     // Convert fractional difficulty back to length
     if (!TargetSetFractionalDifficulty(nFractionalDifficultyNew, nBitsNext))
-        return printf("TargetGetNext() : unable to set fractional difficulty prev=0x%016"PRI64x" new=0x%016"PRI64x, nFractionalDifficulty, nFractionalDifficultyNew);
+        return printf("TargetGetNext() : unable to set fractional difficulty prev=%ld new=%ld\n", (long)nFractionalDifficulty, (long)nFractionalDifficultyNew);
     return true;
 }
 
