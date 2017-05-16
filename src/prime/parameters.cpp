@@ -61,14 +61,14 @@ bool PrimeCoin::CheckPrimeProofs(uint256 hashBlockHeader, unsigned int nBits, co
     return true;
 }
 
-CAmount PrimeCoin::GetPrimeBlockValue(int nBits, const CAmount& nFees)
+CAmount PrimeCoin::GetPrimeBlockValue(int nBits)
 {
     uint64_t nSubsidy = 0;
 
     if (!TargetGetMint(nBits, nSubsidy))
         error("GetBlockValue() : invalid mint value");
 
-    return ((CAmount)nSubsidy) + nFees;
+    return ((CAmount)nSubsidy);
 }
 
 /**
