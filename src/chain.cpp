@@ -120,17 +120,8 @@ void CBlockIndex::BuildSkip()
 }
 
 arith_uint256 GetBlockProof(const CBlockIndex& block)
-{    
-    uint64_t nFractionalDifficulty = TargetGetFractionalDifficulty(nBits);
-    CBigNum bnWork = 256;
-
-    for (unsigned int nCount = nTargetMinLength; nCount < TargetGetLength(nBits); nCount++)
-        bnWork *= nWorkTransitionRatio;
-
-    bnWork *= ((uint64_t) nWorkTransitionRatio) * nFractionalDifficulty;
-    bnWork /= (((uint64_t) nWorkTransitionRatio - 1) * nFractionalDifficultyMin + nFractionalDifficulty);
-
-    return UintToArith256(bnWork.getuint256());
+{
+    return UintToArith256(prime.GetPrimeBlockProof(block));
 }
 
 int64_t GetBlockProofEquivalentTime(const CBlockIndex& to, const CBlockIndex& from, const CBlockIndex& tip, const Consensus::Params& params)

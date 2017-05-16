@@ -20,6 +20,7 @@ private:
 	std::string tickerName = "XPM";
 
 public:
+	uint256 GetPrimeBlockProof(const CBlockIndex& block);
 	unsigned int GetPrimeWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock);
 	bool CheckPrimeProofs(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnProbablePrime, unsigned int& nChainType, unsigned int& nChainLength);
 	CAmount GetPrimeBlockValue(int nBits, const CAmount& nFees);
