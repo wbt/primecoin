@@ -10,6 +10,8 @@
 
 using namespace std;
 
+PrimeCoin prime;
+
 uint256 PrimeCoin::GetPrimeBlockProof(const CBlockIndex& block)
 {
     uint64_t nFractionalDifficulty = TargetGetFractionalDifficulty(block.nBits);

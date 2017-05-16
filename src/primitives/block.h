@@ -24,9 +24,9 @@ public:
     CBigNum bnPrimeChainMultiplier;
     int64_t nMoneySupply;
 
-    unsigned int nPrimeChainType;
-    unsigned int nPrimeChainLength;
-    unsigned int nWorkTransition;
+    uint32_t nPrimeChainType;
+    uint32_t nPrimeChainLength;
+    uint32_t nWorkTransition;
 };
 >>>>>>> 72d87cc94... [Reallocation] Preparation for Design Swaps
 

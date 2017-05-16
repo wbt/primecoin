@@ -35,6 +35,6 @@ public:
 
 };
 
-PrimeCoin prime;
+extern PrimeCoin prime;
 
 #endif // PRIME_PARAMETERS_H
