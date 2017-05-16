@@ -10,20 +10,6 @@
 
 using namespace std;
 
-uint256 PrimeCoin::GetPrimeBlockProof(const CBlockIndex& block)
-{
-    uint64_t nFractionalDifficulty = TargetGetFractionalDifficulty(nBits);
-    CBigNum bnWork = 256;
-
-    for (unsigned int nCount = nTargetMinLength; nCount < TargetGetLength(nBits); nCount++)
-        bnWork *= nWorkTransitionRatio;
-
-    bnWork *= ((uint64_t) nWorkTransitionRatio) * nFractionalDifficulty;
-    bnWork /= (((uint64_t) nWorkTransitionRatio - 1) * nFractionalDifficultyMin + nFractionalDifficulty);
-
-    return bnWork.getuint256();
-}
-
 unsigned int PrimeCoin::GetPrimeWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
 {
     unsigned int nBits = TargetGetLimit();

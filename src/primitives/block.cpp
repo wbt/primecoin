@@ -6,9 +6,11 @@
 #include <primitives/block.h>
 
 #include <hash.h>
+#include <streams.h>
 #include <tinyformat.h>
 #include <utilstrencodings.h>
 #include <crypto/common.h>
+#include <chain.h> // why?
 
 // Block hash includes prime certificate
 uint256 CBlockHeader::GetHash() const
