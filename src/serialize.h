@@ -23,7 +23,7 @@
 
 #include <prevector.h>
 
-static const unsigned int MAX_SIZE = 0x02000000;
+class CScript;
 
 /**
  * Dummy data type to identify deserializing constructors.
@@ -59,7 +59,36 @@ inline T* NCONST_PTR(const T* val)
     return const_cast<T*>(val);
 }
 
-/*
+/**
+ * Get begin pointer of vector (non-const version).
+ * @note These functions avoid the undefined case of indexing into an empty
+ * vector, as well as that of indexing after the end of the vector.
+ */
+template <class T, class TAl>
+inline T* begin_ptr(std::vector<T,TAl>& v)
+{
+    return v.empty() ? NULL : &v[0];
+}
+/** Get begin pointer of vector (const version) */
+template <class T, class TAl>
+inline const T* begin_ptr(const std::vector<T,TAl>& v)
+{
+    return v.empty() ? NULL : &v[0];
+}
+/** Get end pointer of vector (non-const version) */
+template <class T, class TAl>
+inline T* end_ptr(std::vector<T,TAl>& v)
+{
+    return v.empty() ? NULL : (&v[0] + v.size());
+}
+/** Get end pointer of vector (const version) */
+template <class T, class TAl>
+inline const T* end_ptr(const std::vector<T,TAl>& v)
+{
+    return v.empty() ? NULL : (&v[0] + v.size());
+}
+
+/**
  * Lowest-level serialization and conversion.
  * @note Sizes of these types are verified in the tests
  */
@@ -487,6 +516,12 @@ template<typename Stream, unsigned int N, typename T, typename V> void Unseriali
 template<typename Stream, unsigned int N, typename T> inline void Unserialize(Stream& is, prevector<N, T>& v);
 
 /**
+ * others derived from vector
+ */
+template<typename Stream> void Serialize(Stream& os, const CScript& v);
+template<typename Stream> void Unserialize(Stream& is, CScript& v);
+
+/**
  * vector
  * vectors of unsigned char are a special case and are intended to be serialized as a single opaque blob.
  */
@@ -543,6 +578,10 @@ inline void Unserialize(Stream& is, T& a)
 {
     a.Unserialize(is);
 }
+
+
+
+
 
 /**
  * others derived from vector
@@ -643,6 +682,21 @@ inline void Unserialize(Stream& is, prevector<N, T>& v)
 }
 
 
+
+/**
+ * others derived from vector
+ */
+template<typename Stream>
+void Serialize(Stream& os, const CScript& v)
+{
+    Serialize(os, (const std::vector<unsigned char>&)v);
+}
+
+template<typename Stream>
+void Unserialize(Stream& is, CScript& v)
+{
+    Unserialize(is, (std::vector<unsigned char>&)v);
+}
 
 /**
  * vector

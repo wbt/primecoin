@@ -211,6 +211,7 @@ libbitcoin_server_a_SOURCES = \
   policy/rbf.cpp \
   prime/prime.cpp \
   prime/parameters.cpp \
+  prime/prime.cpp \
   pow.cpp \
   rest.cpp \
   rpc/blockchain.cpp \
