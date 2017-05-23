@@ -12,6 +12,9 @@
 #include <crypto/common.h>
 #include <chain.h> // why?
 
+#define BEGIN(a)            ((char*)&(a))
+#define END(a)              ((char*)&((&(a))[1]))
+
 // Block hash includes prime certificate
 uint256 CBlockHeader::GetHash() const
 {
@@ -23,7 +26,7 @@ uint256 CBlockHeader::GetHash() const
 // Header hash does not include prime certificate
 uint256 CBlockHeader::GetHeaderHash() const
 {
-    return SerializeHash(*this);
+    return Hash(BEGIN(nVersion), END(nNonce));
 }
 
 std::string CBlock::ToString() const
