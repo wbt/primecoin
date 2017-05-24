@@ -25,7 +25,7 @@ void GeneratePrimeTable()
     for (unsigned int n = 2; n < nPrimeTableLimit; n++)
         if (!vfComposite[n])
             vPrimes.push_back(n);
-    printf("GeneratePrimeTable() : prime table [1, %u] generated with %u primes\n", nPrimeTableLimit, (unsigned int) vPrimes.size());
+    LogPrint(BCLog::PRIME, "GeneratePrimeTable() : prime table [1, %u] generated with %u primes\n", nPrimeTableLimit, (unsigned int) vPrimes.size());
 }
 
 // Get next prime number of p
@@ -97,8 +97,10 @@ static bool FermatProbablePrimalityTest(const CBigNum& n, unsigned int& nLength)
         return true;
     // Failed Fermat test, calculate fractional length
     unsigned int nFractionalLength = (((n-r) << nFractionalBits) / n).getuint();
-    if (nFractionalLength >= (1 << nFractionalBits))
-        return printf("FermatProbablePrimalityTest() : fractional assert");
+    if (nFractionalLength >= (1 << nFractionalBits)) {
+        LogPrint(BCLog::PRIME, "FermatProbablePrimalityTest() : fractional assert");
+		return false;
+	}
     nLength = (nLength & TARGET_LENGTH_MASK) | nFractionalLength;
     return false;
 }
@@ -127,16 +129,20 @@ static bool EulerLagrangeLifchitzPrimalityTest(const CBigNum& n, bool fSophieGer
         fPassedTest = ((r+1) == n);
     else if ((!fSophieGermain) && (nMod8 == 1)) // LifChitz
         fPassedTest = (r == 1);
-    else
-        return printf("EulerLagrangeLifchitzPrimalityTest() : invalid n %% 8 = %d, %s", nMod8.getint(), (fSophieGermain? "first kind" : "second kind"));
-
+    else {
+        LogPrint(BCLog::PRIME, "EulerLagrangeLifchitzPrimalityTest() : invalid n %% 8 = %d, %s", nMod8.getint(), (fSophieGermain? "first kind" : "second kind"));
+		return false;
+	}
+	
     if (fPassedTest)
         return true;
     // Failed test, calculate fractional length
     r = (r * r) % n; // derive Fermat test remainder
     unsigned int nFractionalLength = (((n-r) << nFractionalBits) / n).getuint();
-    if (nFractionalLength >= (1 << nFractionalBits))
-        return printf("EulerLagrangeLifchitzPrimalityTest() : fractional assert");
+    if (nFractionalLength >= (1 << nFractionalBits)) {
+        LogPrint(BCLog::PRIME, "EulerLagrangeLifchitzPrimalityTest() : fractional assert");
+        return false;
+	}
     nLength = (nLength & TARGET_LENGTH_MASK) | nFractionalLength;
     return false;
 }
@@ -164,8 +170,10 @@ unsigned int TargetGetLength(unsigned int nBits)
 
 bool TargetSetLength(unsigned int nLength, unsigned int& nBits)
 {
-    if (nLength >= 0xff)
-        return printf("TargetSetLength() : invalid length=%u", nLength);
+    if (nLength >= 0xff) {
+		LogPrint(BCLog::PRIME, "TargetSetLength() : invalid length=%u", nLength);
+        return false;
+    }
     nBits &= TARGET_FRACTIONAL_MASK;
     nBits |= (nLength << nFractionalBits);
     return true;
@@ -194,11 +202,15 @@ uint64_t TargetGetFractionalDifficulty(unsigned int nBits)
 
 bool TargetSetFractionalDifficulty(uint64_t nFractionalDifficulty, unsigned int& nBits)
 {
-    if (nFractionalDifficulty < nFractionalDifficultyMin)
-        return printf("TargetSetFractionalDifficulty() : difficulty below min");
+    if (nFractionalDifficulty < nFractionalDifficultyMin) {
+        LogPrint(BCLog::PRIME, "TargetSetFractionalDifficulty() : difficulty below min");
+        return false;
+	}
     uint64_t nFractional = nFractionalDifficultyMax / nFractionalDifficulty;
-    if (nFractional > (1u<<nFractionalBits))
-        return printf("TargetSetFractionalDifficulty() : fractional overflow: nFractionalDifficulty=%ld\n", (long)nFractionalDifficulty);
+    if (nFractional > (1u<<nFractionalBits)) {
+        LogPrint(BCLog::PRIME, "TargetSetFractionalDifficulty() : fractional overflow: nFractionalDifficulty=%ld\n", (long)nFractionalDifficulty);
+		return false;
+    }
     nFractional = (1u<<nFractionalBits) - nFractional;
     nBits &= TARGET_LENGTH_MASK;
     nBits |= (unsigned int)nFractional;
@@ -224,8 +236,10 @@ bool TargetGetMint(unsigned int nBits, uint64_t& nMint)
     nMint = 0;
     static uint64_t nMintLimit = 999llu * COIN;
     CBigNum bnMint = nMintLimit;
-    if (TargetGetLength(nBits) < nTargetMinLength)
-        return printf("TargetGetMint() : length below minimum required, nBits=%08x", nBits);
+    if (TargetGetLength(nBits) < nTargetMinLength) {
+        LogPrint(BCLog::PRIME, "TargetGetMint() : length below minimum required, nBits=%08x", nBits);
+        return false;
+	}
     bnMint = (bnMint << nFractionalBits) / nBits;
     bnMint = (bnMint << nFractionalBits) / nBits;
     bnMint = (bnMint / CENT) * CENT;  // mint value rounded to cent
@@ -233,7 +247,9 @@ bool TargetGetMint(unsigned int nBits, uint64_t& nMint)
     if (nMint > nMintLimit)
     {
         nMint = 0;
-        return printf("TargetGetMint() : mint value over limit, nBits=%08x", nBits);
+        LogPrint(BCLog::PRIME, "TargetGetMint() : mint value over limit, nBits=%08x", nBits);
+        
+        return false;
     }
     return true;
 }
@@ -255,7 +271,7 @@ bool TargetGetNext(unsigned int nBits, int64_t nInterval, int64_t nTargetSpacing
 
     uint64_t nFractionalDifficultyNew = UintToArith256(bnFractionalDifficulty.getuint256()).GetLow64();
 
-    printf("TargetGetNext() : nActualSpacing=%d nFractionDiff=%ld nFractionDiffNew=%ld\n", (int)nActualSpacing, (long)nFractionalDifficulty, (long)nFractionalDifficultyNew);
+    LogPrint(BCLog::PRIME, "TargetGetNext() : nActualSpacing=%d nFractionDiff=%ld nFractionDiffNew=%ld\n", (int)nActualSpacing, (long)nFractionalDifficulty, (long)nFractionalDifficultyNew);
     // Step up length if fractional past threshold
     if (nFractionalDifficultyNew > nFractionalDifficultyThreshold)
     {
@@ -269,8 +285,10 @@ bool TargetGetNext(unsigned int nBits, int64_t nInterval, int64_t nTargetSpacing
         TargetDecrementLength(nBitsNext);
     }
     // Convert fractional difficulty back to length
-    if (!TargetSetFractionalDifficulty(nFractionalDifficultyNew, nBitsNext))
-        return printf("TargetGetNext() : unable to set fractional difficulty prev=%ld new=%ld\n", (long)nFractionalDifficulty, (long)nFractionalDifficultyNew);
+    if (!TargetSetFractionalDifficulty(nFractionalDifficultyNew, nBitsNext)) {
+        LogPrint(BCLog::PRIME, "TargetGetNext() : unable to set fractional difficulty prev=%ld new=%ld\n", (long)nFractionalDifficulty, (long)nFractionalDifficultyNew);
+        return false;
+	}
     return true;
 }
 
@@ -357,46 +375,60 @@ bool ProbablePrimeChainTest(const CBigNum& bnPrimeChainOrigin, unsigned int nBit
 bool CheckPrimeProofOfWork(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnPrimeChainMultiplier, unsigned int& nChainType, unsigned int& nChainLength)
 {
     // Check target
-    if (TargetGetLength(nBits) < nTargetMinLength || TargetGetLength(nBits) > 99)
-        return printf("CheckPrimeProofOfWork() : invalid chain length target %s", TargetToString(nBits).c_str());
-
+    if (TargetGetLength(nBits) < nTargetMinLength || TargetGetLength(nBits) > 99) {
+        LogPrint(BCLog::PRIME, "CheckPrimeProofOfWork() : invalid chain length target %s", TargetToString(nBits).c_str());
+        return false;
+	}
+	
     // Check header hash limit
-    if (hashBlockHeader < ArithToUint256(hashBlockHeaderLimit))
-        return printf("CheckPrimeProofOfWork() : block header hash under limit");
+    if (hashBlockHeader < ArithToUint256(hashBlockHeaderLimit)) {
+        LogPrint(BCLog::PRIME, "CheckPrimeProofOfWork() : block header hash under limit");
+        return false;
+	}
     // Check target for prime proof-of-work
     CBigNum bnPrimeChainOrigin = CBigNum(hashBlockHeader) * bnPrimeChainMultiplier;
-    if (bnPrimeChainOrigin < bnPrimeMin)
-        return printf("CheckPrimeProofOfWork() : prime too small");
+    if (bnPrimeChainOrigin < bnPrimeMin) {
+        LogPrint(BCLog::PRIME, "CheckPrimeProofOfWork() : prime too small");
+        return false;
+	}
     // First prime in chain must not exceed cap
-    if (bnPrimeChainOrigin > bnPrimeMax)
-        return printf("CheckPrimeProofOfWork() : prime too big");
+    if (bnPrimeChainOrigin > bnPrimeMax) {
+        LogPrint(BCLog::PRIME, "CheckPrimeProofOfWork() : prime too big");
+        return false;
+	}
 
     // Check prime chain
     unsigned int nChainLengthCunningham1 = 0;
     unsigned int nChainLengthCunningham2 = 0;
     unsigned int nChainLengthBiTwin = 0;
-    if (!ProbablePrimeChainTest(bnPrimeChainOrigin, nBits, false, nChainLengthCunningham1, nChainLengthCunningham2, nChainLengthBiTwin))
-        return printf("CheckPrimeProofOfWork() : failed prime chain test target=%s length=(%s %s %s)", TargetToString(nBits).c_str(),
-            TargetToString(nChainLengthCunningham1).c_str(), TargetToString(nChainLengthCunningham2).c_str(), TargetToString(nChainLengthBiTwin).c_str());
-    if (nChainLengthCunningham1 < nBits && nChainLengthCunningham2 < nBits && nChainLengthBiTwin < nBits)
-        return printf("CheckPrimeProofOfWork() : prime chain length assert target=%s length=(%s %s %s)", TargetToString(nBits).c_str(),
-            TargetToString(nChainLengthCunningham1).c_str(), TargetToString(nChainLengthCunningham2).c_str(), TargetToString(nChainLengthBiTwin).c_str());
-
+    if (!ProbablePrimeChainTest(bnPrimeChainOrigin, nBits, false, nChainLengthCunningham1, nChainLengthCunningham2, nChainLengthBiTwin)) {
+		LogPrint(BCLog::PRIME, "CheckPrimeProofOfWork() : failed prime chain test target=%s length=(%s %s %s)", TargetToString(nBits).c_str(),
+				TargetToString(nChainLengthCunningham1).c_str(), TargetToString(nChainLengthCunningham2).c_str(), TargetToString(nChainLengthBiTwin).c_str());
+		return false;
+	} 
+    if (nChainLengthCunningham1 < nBits && nChainLengthCunningham2 < nBits && nChainLengthBiTwin < nBits) {
+        LogPrint(BCLog::PRIME, "CheckPrimeProofOfWork() : prime chain length assert target=%s length=(%s %s %s)", TargetToString(nBits).c_str(),
+				TargetToString(nChainLengthCunningham1).c_str(), TargetToString(nChainLengthCunningham2).c_str(), TargetToString(nChainLengthBiTwin).c_str());
+        return false; 
+	}
     // Double check prime chain with Fermat tests only
     unsigned int nChainLengthCunningham1FermatTest = 0;
     unsigned int nChainLengthCunningham2FermatTest = 0;
     unsigned int nChainLengthBiTwinFermatTest = 0;
-    if (!ProbablePrimeChainTest(bnPrimeChainOrigin, nBits, true, nChainLengthCunningham1FermatTest, nChainLengthCunningham2FermatTest, nChainLengthBiTwinFermatTest))
-        return printf("CheckPrimeProofOfWork() : failed Fermat test target=%s length=(%s %s %s) lengthFermat=(%s %s %s)", TargetToString(nBits).c_str(),
+    if (!ProbablePrimeChainTest(bnPrimeChainOrigin, nBits, true, nChainLengthCunningham1FermatTest, nChainLengthCunningham2FermatTest, nChainLengthBiTwinFermatTest)) {
+        LogPrint(BCLog::PRIME, "CheckPrimeProofOfWork() : failed Fermat test target=%s length=(%s %s %s) lengthFermat=(%s %s %s)", TargetToString(nBits).c_str(),
             TargetToString(nChainLengthCunningham1).c_str(), TargetToString(nChainLengthCunningham2).c_str(), TargetToString(nChainLengthBiTwin).c_str(),
             TargetToString(nChainLengthCunningham1FermatTest).c_str(), TargetToString(nChainLengthCunningham2FermatTest).c_str(), TargetToString(nChainLengthBiTwinFermatTest).c_str());
+        return false;
+	}
     if (nChainLengthCunningham1 != nChainLengthCunningham1FermatTest ||
         nChainLengthCunningham2 != nChainLengthCunningham2FermatTest ||
-        nChainLengthBiTwin != nChainLengthBiTwinFermatTest)
-        return printf("CheckPrimeProofOfWork() : failed Fermat-only double check target=%s length=(%s %s %s) lengthFermat=(%s %s %s)", TargetToString(nBits).c_str(), 
+        nChainLengthBiTwin != nChainLengthBiTwinFermatTest) {
+        LogPrint(BCLog::PRIME, "CheckPrimeProofOfWork() : failed Fermat-only double check target=%s length=(%s %s %s) lengthFermat=(%s %s %s)", TargetToString(nBits).c_str(), 
             TargetToString(nChainLengthCunningham1).c_str(), TargetToString(nChainLengthCunningham2).c_str(), TargetToString(nChainLengthBiTwin).c_str(),
             TargetToString(nChainLengthCunningham1FermatTest).c_str(), TargetToString(nChainLengthCunningham2FermatTest).c_str(), TargetToString(nChainLengthBiTwinFermatTest).c_str());
-
+        return false; 
+	}
     // Select the longest primechain from the three chain types
     nChainLength = nChainLengthCunningham1;
     nChainType = PRIME_CHAIN_CUNNINGHAM1;
@@ -419,11 +451,13 @@ bool CheckPrimeProofOfWork(uint256 hashBlockHeader, unsigned int nBits, const CB
         unsigned int nChainLengthBiTwinExtended = 0;
         if (ProbablePrimeChainTest(bnPrimeChainOrigin / 2, nBits, false, nChainLengthCunningham1Extended, nChainLengthCunningham2Extended, nChainLengthBiTwinExtended))
         { // try extending down the primechain with a halved multiplier
-            if (nChainLengthCunningham1Extended > nChainLength || nChainLengthCunningham2Extended > nChainLength || nChainLengthBiTwinExtended > nChainLength)
-                return printf("CheckPrimeProofOfWork() : prime certificate not normalzied target=%s length=(%s %s %s) extend=(%s %s %s)",
+            if (nChainLengthCunningham1Extended > nChainLength || nChainLengthCunningham2Extended > nChainLength || nChainLengthBiTwinExtended > nChainLength) {
+                LogPrint(BCLog::PRIME, "CheckPrimeProofOfWork() : prime certificate not normalzied target=%s length=(%s %s %s) extend=(%s %s %s)",
                     TargetToString(nBits).c_str(),
                     TargetToString(nChainLengthCunningham1).c_str(), TargetToString(nChainLengthCunningham2).c_str(), TargetToString(nChainLengthBiTwin).c_str(),
                     TargetToString(nChainLengthCunningham1Extended).c_str(), TargetToString(nChainLengthCunningham2Extended).c_str(), TargetToString(nChainLengthBiTwinExtended).c_str());
+                return false; 
+			}
         }
     }
 
@@ -546,7 +580,7 @@ bool MineProbablePrimeChain(CBlock& block, CBigNum& bnFixedMultiplier, bool& fNe
         unsigned int nSieveWeaveComposites = nCandidateCount;
         nCandidateCount = psieve->GetCandidateCount();
         nSieveWeaveComposites = nCandidateCount - nSieveWeaveComposites; // number of composite chains found in last weave
-        printf("MineProbablePrimeChain() : new sieve (%u/%u@%u/%u) ready in %uus test cost=%uus\n",
+        LogPrint(BCLog::PRIME, "MineProbablePrimeChain() : new sieve (%u/%u@%u/%u) ready in %uus test cost=%uus\n",
                 nCandidateCount, nMaxSieveSize,
                 (nWeaveTimes < vPrimes.size())? vPrimes[nWeaveTimes] : nPrimeTableLimit, pminer->GetSieveWeaveOptimalPrime(),
                 (unsigned int) (nCurrent - nStart), (unsigned int)pminer->GetPrimalityTestCost());
@@ -578,7 +612,7 @@ bool MineProbablePrimeChain(CBlock& block, CBigNum& bnFixedMultiplier, bool& fNe
         if (ProbablePrimeChainTestForMiner(bnChainOrigin, block.nBits, nCandidateType, nChainLength))
         {
             block.bnPrimeChainMultiplier = bnFixedMultiplier * nTriedMultiplier;
-            printf("Probable prime chain found for block=%s!!\n  Target: %s\n  Chain: %s\n", block.GetHash().GetHex().c_str(),
+            LogPrint(BCLog::PRIME, "Probable prime chain found for block=%s!!\n  Target: %s\n  Chain: %s\n", block.GetHash().GetHex().c_str(),
                 TargetToString(block.nBits).c_str(), GetPrimeChainName(nCandidateType, nChainLength).c_str());
             nProbableChainLength = nChainLength;
             return true;
@@ -610,13 +644,16 @@ bool CSieveOfEratosthenes::Weave()
     // Find the modulo inverse of fixed factor
     CAutoBN_CTX pctx;
     CBigNum bnFixedInverse;
-    if (!BN_mod_inverse(&bnFixedInverse, &bnFixedFactor, &p, pctx))
-        return printf("CSieveOfEratosthenes::Weave(): BN_mod_inverse of fixed factor failed for prime #%u=%u", nPrimeSeq, vPrimes[nPrimeSeq]);
+    if (!BN_mod_inverse(&bnFixedInverse, &bnFixedFactor, &p, pctx)) {
+		LogPrint(BCLog::PRIME, "CSieveOfEratosthenes::Weave(): BN_mod_inverse of fixed factor failed for prime #%u=%u", nPrimeSeq, vPrimes[nPrimeSeq]);
+        return false; 
+    }
     CBigNum bnTwo = 2;
     CBigNum bnTwoInverse;
-    if (!BN_mod_inverse(&bnTwoInverse, &bnTwo, &p, pctx))
-        return printf("CSieveOfEratosthenes::Weave(): BN_mod_inverse of 2 failed for prime #%u=%u", nPrimeSeq, vPrimes[nPrimeSeq]);
-
+    if (!BN_mod_inverse(&bnTwoInverse, &bnTwo, &p, pctx)) {
+        LogPrint(BCLog::PRIME, "CSieveOfEratosthenes::Weave(): BN_mod_inverse of 2 failed for prime #%u=%u", nPrimeSeq, vPrimes[nPrimeSeq]);
+        return false; 
+	}
     // Weave the sieve for the prime
     unsigned int nChainLength = TargetGetLength(nBits);
     for (unsigned int nBiTwinSeq = 0; nBiTwinSeq < 2 * nChainLength; nBiTwinSeq++)

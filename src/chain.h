@@ -194,6 +194,10 @@ public:
     //! (memory only) Total amount of work (expected number of hashes) in the chain up to and including this block
     arith_uint256 nChainWork;
 
+    unsigned int nWorkTransition; 	/// primecoin: work transition ratio (memory-only)
+	unsigned int nPrimeChainType;   /// primecoin: chain type
+    unsigned int nPrimeChainLength; /// primecoin: chain length
+    
     //! Number of transactions in this block.
     //! Note: in a potential headers-first mode, this number cannot be relied upon
     unsigned int nTx;
@@ -238,7 +242,6 @@ public:
         nWorkTransition = 0;
         nPrimeChainType = 0;
         nPrimeChainLength = 0;
-        nMoneySupply = 0;
 
         nVersion       = 0;
         hashMerkleRoot = uint256();
@@ -376,6 +379,7 @@ class CDiskBlockIndex : public CBlockIndex
 {
 public:
     uint256 hashPrev;
+	uint256 hashBlock; // primecoin: persist block hash as well
 
     CDiskBlockIndex() {
         hashPrev = uint256();
@@ -395,7 +399,6 @@ public:
 
         READWRITE(VARINT(nPrimeChainType));
         READWRITE(VARINT(nPrimeChainLength));
-        READWRITE(VARINT(nMoneySupply));
         READWRITE(VARINT(nHeight));
         READWRITE(VARINT(nStatus));
         READWRITE(VARINT(nTx));
