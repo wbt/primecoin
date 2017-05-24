@@ -13,6 +13,7 @@
 
 class PrimeBlock {
 public:
+/*
     uint256 hashBlock; // Primecoin: Persist block hash as well
 
     // Primecoin: proof-of-work certificate
@@ -27,6 +28,8 @@ public:
     uint32_t nPrimeChainType;
     uint32_t nPrimeChainLength;
     uint32_t nWorkTransition;
+*/
+	int whatEverThisOn;
 };
 >>>>>>> 72d87cc94... [Reallocation] Preparation for Design Swaps
 
@@ -47,6 +50,13 @@ public:
     uint32_t nTime;
     uint32_t nBits;
     uint32_t nNonce;
+
+    // Primecoin: proof-of-work certificate
+    // Multiplier to block hash to derive the probable prime chain (k=0, 1, ...)
+    // Cunningham Chain of first kind:  hash * multiplier * 2**k - 1
+    // Cunningham Chain of second kind: hash * multiplier * 2**k + 1
+    // BiTwin Chain:                    hash * multiplier * 2**k +/- 1
+    CBigNum bnPrimeChainMultiplier;
 
     CBlockHeader()
     {
@@ -101,7 +111,9 @@ public:
 
     // memory only
     mutable bool fChecked;
-
+    unsigned int nPrimeChainType;   // primecoin: chain type (memory-only)
+    unsigned int nPrimeChainLength; // primecoin: chain length (memory-only)
+    
     CBlock()
     {
         SetNull();
@@ -124,10 +136,10 @@ public:
     void SetNull()
     {
         CBlockHeader::SetNull();
-        nPrimeChainType = 0;
-        nPrimeChainLength = 0;
         vtx.clear();
         fChecked = false;
+        nPrimeChainType = 0;
+        nPrimeChainLength = 0;
     }
 
     CBlockHeader GetBlockHeader() const
