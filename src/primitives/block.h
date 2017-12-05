@@ -13,7 +13,6 @@
 
 class PrimeBlock {
 public:
-/*
     uint256 hashBlock; // Primecoin: Persist block hash as well
 
     // Primecoin: proof-of-work certificate
@@ -28,8 +27,6 @@ public:
     uint32_t nPrimeChainType;
     uint32_t nPrimeChainLength;
     uint32_t nWorkTransition;
-*/
-	int whatEverThisOn;
 };
 >>>>>>> 72d87cc94... [Reallocation] Preparation for Design Swaps
 
@@ -100,6 +97,8 @@ public:
     {
         return (int64_t)nTime;
     }
+    
+    std::string HeaderToString() const;
 };
 
 
@@ -111,8 +110,6 @@ public:
 
     // memory only
     mutable bool fChecked;
-    unsigned int nPrimeChainType;   // primecoin: chain type (memory-only)
-    unsigned int nPrimeChainLength; // primecoin: chain length (memory-only)
     
     CBlock()
     {
@@ -131,6 +128,8 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action) {
         READWRITE(*(CBlockHeader*)this);
         READWRITE(vtx);
+        READWRITE(VARINT(nPrimeChainType));
+        READWRITE(VARINT(nPrimeChainLength));
     }
 
     void SetNull()
@@ -151,6 +150,7 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
+        block.bnPrimeChainMultiplier = bnPrimeChainMultiplier;
         return block;
     }
 

@@ -32,18 +32,34 @@ uint256 CBlockHeader::GetHeaderHash() const
 std::string CBlock::ToString() const
 {
     std::stringstream s;
-    s <<    strprintf("CBlock(hash=%s, hashBlockHeader=%s, ver=%d, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u, vtx=%u)\n",
+    s <<    strprintf("CBlock(hash=%s, hashBlockHeader=%s, ver=%d, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u, bnPrimeChainMultiplier=%s, vtx=%u)\n",
             GetHash().ToString().c_str(),
             GetHeaderHash().ToString().c_str(),
             nVersion,
             hashPrevBlock.ToString().c_str(),
             hashMerkleRoot.ToString().c_str(),
             nTime, nBits, nNonce,
+            bnPrimeChainMultiplier.GetHex().c_str(),
             vtx.size());
             
     for (unsigned int i = 0; i < vtx.size(); i++)
     {
         s << "  " << vtx[i]->ToString() << "\n";
     }
+    return s.str();
+}
+
+std::string CBlockHeader::HeaderToString() const
+{
+    std::stringstream s;
+    s <<    strprintf("CBlockHeader(hash=%s, hashBlockHeader=%s, ver=%d, hashPrevBlock=%s, hashMerkleRoot=%s, nTime=%u, nBits=%08x, nNonce=%u, bnPrimeChainMultiplier=%s)\n",
+            GetHash().ToString().c_str(),
+            GetHeaderHash().ToString().c_str(),
+            nVersion,
+            hashPrevBlock.ToString().c_str(),
+            hashMerkleRoot.ToString().c_str(),
+            nTime, nBits, nNonce,
+            bnPrimeChainMultiplier.GetHex().c_str());
+
     return s.str();
 }

@@ -26,16 +26,20 @@
 #include <hash.h>
 #include <validationinterface.h>
 #include <warnings.h>
+#include <prime/prime.h>
 
 #include <stdint.h>
 
 #include <univalue.h>
 
+#include <boost/foreach.hpp>
 #include <boost/thread/thread.hpp> // boost::thread::interrupt
 
 #include <memory>
 #include <mutex>
 #include <condition_variable>
+
+using namespace std;
 
 struct CUpdatedBlock
 {
@@ -57,26 +61,12 @@ double GetDifficulty(const CChain& chain, const CBlockIndex* blockindex)
     if (blockindex == nullptr)
     {
         if (chain.Tip() == nullptr)
-            return 1.0;
+            return 256.0;
         else
             blockindex = chain.Tip();
     }
 
-    int nShift = (blockindex->nBits >> 24) & 0xff;
-    double dDiff =
-        (double)0x0000ffff / (double)(blockindex->nBits & 0x00ffffff);
-
-    while (nShift < 29)
-    {
-        dDiff *= 256.0;
-        nShift++;
-    }
-    while (nShift > 29)
-    {
-        dDiff /= 256.0;
-        nShift--;
-    }
-
+    double dDiff = GetPrimeDifficulty(blockindex->nBits);
     return dDiff;
 }
 
@@ -103,9 +93,11 @@ UniValue blockheaderToJSON(const CBlockIndex* blockindex)
     result.push_back(Pair("mediantime", (int64_t)blockindex->GetMedianTimePast()));
     result.push_back(Pair("nonce", (uint64_t)blockindex->nNonce));
     result.push_back(Pair("bits", strprintf("%08x", blockindex->nBits)));
-    result.push_back(Pair("difficulty", GetDifficulty(blockindex)));
+    result.push_back(Pair("difficulty", GetPrimeDifficulty(blockindex->nBits)));
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
     result.push_back(Pair("nTx", (uint64_t)blockindex->nTx));
+    CBigNum bnPrimeChainOrigin = CBigNum(blockindex->GetBlockHeader().GetHeaderHash()) * block.bnPrimeChainMultiplier;
+    result.push_back(Pair("primeorigin", bnPrimeChainOrigin.ToString().c_str()));
 
     if (blockindex->pprev)
         result.push_back(Pair("previousblockhash", blockindex->pprev->GetBlockHash().GetHex()));
@@ -152,6 +144,10 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     result.push_back(Pair("difficulty", GetDifficulty(blockindex)));
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
     result.push_back(Pair("nTx", (uint64_t)blockindex->nTx));
+    result.push_back(Pair("transition", GetPrimeDifficulty(blockindex->nWorkTransition)));
+    CBigNum bnPrimeChainOrigin = CBigNum(block.GetHeaderHash()) * block.bnPrimeChainMultiplier;
+    result.push_back(Pair("primechain", GetPrimeChainName(blockindex->nPrimeChainType, blockindex->nPrimeChainLength).c_str()));
+    result.push_back(Pair("primeorigin", bnPrimeChainOrigin.ToString().c_str()));
 
     if (blockindex->pprev)
         result.push_back(Pair("previousblockhash", blockindex->pprev->GetBlockHash().GetHex()));
@@ -1617,6 +1613,207 @@ UniValue savemempool(const JSONRPCRequest& request)
 
     return NullUniValue;
 }
+
+/*
+// Primecoin: list prime chain records within primecoin network
+UniValue listprimerecords(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
+        throw std::runtime_error(
+            "listprimerecords <primechain length> [primechain type]\n"
+            "Returns the list of record prime chains in primecoin network.\n"
+            "<primechain length> is integer like 10, 11, 12 etc.\n"
+            "[primechain type] is optional type, among 1CC, 2CC and TWN");
+
+    int nPrimeChainLength = request.params[0].get_int();
+    unsigned int nPrimeChainType = 0;
+    if (request.params.size() > 1)
+    {
+        std::string strPrimeChainType = request.params[1].get_str();
+        if (strPrimeChainType.compare("1CC") == 0)
+            nPrimeChainType = PRIME_CHAIN_CUNNINGHAM1;
+        else if (strPrimeChainType.compare("2CC") == 0)
+            nPrimeChainType = PRIME_CHAIN_CUNNINGHAM2;
+        else if (strPrimeChainType.compare("TWN") == 0)
+            nPrimeChainType = PRIME_CHAIN_BI_TWIN;
+        else
+            throw runtime_error("Prime chain type must be 1CC, 2CC or TWN.");
+    }
+
+    UniValue ret(UniValue::VARR);
+
+    CBigNum bnPrimeRecord = 0;
+
+    for (CBlockIndex* pindex = chainActive.Genesis(); pindex; pindex = pindex->Next())
+    {
+        if (nPrimeChainLength != (int) TargetGetLength(pindex->nPrimeChainLength))
+            continue; // length not matching, next block
+        if (nPrimeChainType && nPrimeChainType != pindex->nPrimeChainType)
+            continue; // type not matching, next block
+
+		std::string strHash = pindex->GetBlockHash().ToString();
+		uint256 hash(uint256S(strHash));
+
+		if (mapBlockIndex.count(hash) == 0)
+			throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+
+		CBlock block;
+		CBlockIndex* pblockindex = mapBlockIndex[hash];
+
+		if (fHavePruned && !(pblockindex->nStatus & BLOCK_HAVE_DATA) && pblockindex->nTx > 0)
+			throw JSONRPCError(RPC_MISC_ERROR, "Block not available (pruned data)");
+
+		if (!ReadBlockFromDisk(block, pblockindex, Params().GetConsensus()))
+			// Block not found on disk. This could be because we have the block
+			// header in our index but don't have the block (for example if a
+			// non-whitelisted node sends us an unrequested long chain of valid
+			// blocks, we add the headers to our index, but don't accept the
+			// block).
+			throw JSONRPCError(RPC_MISC_ERROR, "Block not found on disk");
+
+        CBigNum bnPrimeChainOrigin = CBigNum(block.GetHeaderHash()) * block.bnPrimeChainMultiplier; // compute prime chain origin
+
+        if (bnPrimeChainOrigin > bnPrimeRecord)
+        {
+            bnPrimeRecord = bnPrimeChainOrigin; // new record in primecoin
+            UniValue entry(UniValue::VOBJ);
+            entry.push_back(Pair("time", DateTimeStrFormat("%Y-%m-%d %H:%M:%S UTC", pindex->GetBlockTime()).c_str()));
+            entry.push_back(Pair("epoch", (boost::int64_t) pindex->GetBlockTime()));
+            entry.push_back(Pair("height", pindex->nHeight));
+            entry.push_back(Pair("primedigit", (int) bnPrimeChainOrigin.ToString().length()));
+            entry.push_back(Pair("primechain", GetPrimeChainName(pindex->nPrimeChainType, pindex->nPrimeChainLength).c_str()));
+            entry.push_back(Pair("primeorigin", bnPrimeChainOrigin.ToString().c_str()));
+            entry.push_back(Pair("primorialform", GetPrimeOriginPrimorialForm(bnPrimeChainOrigin).c_str()));
+            ret.push_back(entry);
+        }
+    }
+
+    return ret;
+}
+
+// Primecoin: list top prime chain within primecoin network
+UniValue listtopprimes(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
+        throw std::runtime_error(
+            "listtopprimes <primechain length> [primechain type]\n"
+            "Returns the list of top prime chains in primecoin network.\n"
+            "<primechain length> is integer like 10, 11, 12 etc.\n"
+            "[primechain type] is optional type, among 1CC, 2CC and TWN");
+
+    int nPrimeChainLength = request.params[0].get_int();
+    unsigned int nPrimeChainType = 0;
+    if (request.params.size() > 1)
+    {
+        std::string strPrimeChainType = request.params[1].get_str();
+        if (strPrimeChainType.compare("1CC") == 0)
+            nPrimeChainType = PRIME_CHAIN_CUNNINGHAM1;
+        else if (strPrimeChainType.compare("2CC") == 0)
+            nPrimeChainType = PRIME_CHAIN_CUNNINGHAM2;
+        else if (strPrimeChainType.compare("TWN") == 0)
+            nPrimeChainType = PRIME_CHAIN_BI_TWIN;
+        else
+            throw runtime_error("Prime chain type must be 1CC, 2CC or TWN.");
+    }
+
+    // Search for top prime chains
+    unsigned int nRankingSize = 10; // ranking list size
+    unsigned int nSortVectorSize = 64; // vector size for sort operation
+    CBigNum bnPrimeQualify = 0; // minimum qualify value for ranking list
+    vector<pair<CBigNum, uint256> > vSortedByOrigin;
+    for (CBlockIndex* pindex = chainActive.Genesis(); pindex; pindex = pindex->Next())
+    {
+        if (nPrimeChainLength != (int) TargetGetLength(pindex->nPrimeChainLength))
+            continue; // length not matching, next block
+        if (nPrimeChainType && nPrimeChainType != pindex->nPrimeChainType)
+            continue; // type not matching, next block
+
+		std::string strHash = pindex->GetBlockHash().ToString();
+		uint256 hash(uint256S(strHash));
+
+		if (mapBlockIndex.count(hash) == 0)
+			throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+
+		CBlock block;
+		CBlockIndex* pblockindex = mapBlockIndex[hash];
+
+		if (fHavePruned && !(pblockindex->nStatus & BLOCK_HAVE_DATA) && pblockindex->nTx > 0)
+			throw JSONRPCError(RPC_MISC_ERROR, "Block not available (pruned data)");
+
+		if (!ReadBlockFromDisk(block, pblockindex, Params().GetConsensus()))
+			// Block not found on disk. This could be because we have the block
+			// header in our index but don't have the block (for example if a
+			// non-whitelisted node sends us an unrequested long chain of valid
+			// blocks, we add the headers to our index, but don't accept the
+			// block).
+			throw JSONRPCError(RPC_MISC_ERROR, "Block not found on disk");
+
+        CBigNum bnPrimeChainOrigin = CBigNum(block.GetHeaderHash()) * block.bnPrimeChainMultiplier; // compute prime chain origin
+
+        if (bnPrimeChainOrigin > bnPrimeQualify)
+            vSortedByOrigin.push_back(make_pair(bnPrimeChainOrigin, block.GetHash()));
+
+        if (vSortedByOrigin.size() >= nSortVectorSize)
+        {
+            // Sort prime chain candidates
+            sort(vSortedByOrigin.begin(), vSortedByOrigin.end());
+            reverse(vSortedByOrigin.begin(), vSortedByOrigin.end());
+            // Truncate candidate list
+            while (vSortedByOrigin.size() > nRankingSize)
+                vSortedByOrigin.pop_back();
+            // Update minimum qualify value for top prime chains
+            bnPrimeQualify = vSortedByOrigin.back().first;
+        }
+    }
+
+    // Final sort of prime chain candidates
+    sort(vSortedByOrigin.begin(), vSortedByOrigin.end());
+    reverse(vSortedByOrigin.begin(), vSortedByOrigin.end());
+    // Truncate candidate list
+    while (vSortedByOrigin.size() > nRankingSize)
+        vSortedByOrigin.pop_back();
+
+    // Output top prime chains
+    UniValue ret(UniValue::VARR);
+    BOOST_FOREACH(const PAIRTYPE(CBigNum, uint256)& item, vSortedByOrigin)
+    {
+        CBigNum bnPrimeChainOrigin = item.first;
+        CBlockIndex* pindex = mapBlockIndex[item.second];
+        
+		std::string strHash = pindex->GetBlockHash().ToString();
+		uint256 hash(uint256S(strHash));
+
+		if (mapBlockIndex.count(hash) == 0)
+			throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+
+		CBlock block;
+		CBlockIndex* pblockindex = mapBlockIndex[hash];
+
+		if (fHavePruned && !(pblockindex->nStatus & BLOCK_HAVE_DATA) && pblockindex->nTx > 0)
+			throw JSONRPCError(RPC_MISC_ERROR, "Block not available (pruned data)");
+
+		if (!ReadBlockFromDisk(block, pblockindex, Params().GetConsensus()))
+			// Block not found on disk. This could be because we have the block
+			// header in our index but don't have the block (for example if a
+			// non-whitelisted node sends us an unrequested long chain of valid
+			// blocks, we add the headers to our index, but don't accept the
+			// block).
+			throw JSONRPCError(RPC_MISC_ERROR, "Block not found on disk");
+
+        UniValue entry(UniValue::VOBJ);
+        entry.push_back(Pair("time", DateTimeStrFormat("%Y-%m-%d %H:%M:%S UTC", pindex->GetBlockTime()).c_str()));
+        entry.push_back(Pair("epoch", (boost::int64_t) pindex->GetBlockTime()));
+        entry.push_back(Pair("height", pindex->nHeight));
+        entry.push_back(Pair("primedigit", (int) bnPrimeChainOrigin.ToString().length()));
+        entry.push_back(Pair("primechain", GetPrimeChainName(pindex->nPrimeChainType, pindex->nPrimeChainLength).c_str()));
+        entry.push_back(Pair("primeorigin", bnPrimeChainOrigin.ToString().c_str()));
+        entry.push_back(Pair("primorialform", GetPrimeOriginPrimorialForm(bnPrimeChainOrigin).c_str()));
+        ret.push_back(entry);
+    }
+
+    return ret;
+}
+*/
 
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         argNames
