@@ -24,9 +24,10 @@ public:
 	unsigned int GetPrimeWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock);
 	bool CheckPrimeProofs(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnProbablePrime, unsigned int& nChainType, unsigned int& nChainLength);
 	CAmount GetPrimeBlockValue(int nBits);
-	// void static PrimeMiner(CWallet *pwallet);
-	// void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads);
-
+/*
+	void static PrimeMiner(CWallet *pwallet);
+	void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads);
+*/
 	std::string getCurrencyName() { return currencyName; }
 	std::string getSmallCurrencyName() { return currencyName; }
 	std::string getLargeCurrencyName() { return currencyName; }

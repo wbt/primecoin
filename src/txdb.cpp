@@ -286,12 +286,15 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
                 pindexNew->nTime          = diskindex.nTime;
                 pindexNew->nBits          = diskindex.nBits;
                 pindexNew->nNonce         = diskindex.nNonce;
+				pindexNew->bnPrimeChainMultiplier	= diskindex.bnPrimeChainMultiplier;
                 pindexNew->nStatus        = diskindex.nStatus;
                 pindexNew->nTx            = diskindex.nTx;
-				
-				printf("Checking information: \n%s\n", pindexNew->ToString().c_str());
-				//if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, pindexNew->bnPrimeChainMultiplier, pindexNew->nPrimeChainType, pindexNew->nPrimeChainLength))
-                //    return error("LoadBlockIndex(): CheckProofOfWork failed: %s", pindexNew->ToString());
+
+				// We don't check block as we don't have the ability to check the prime certificate
+				LogPrintf("%s\n", pindexNew->GetBlockHeader().HeaderToString().c_str());
+
+//				if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, pindexNew->bnPrimeChainMultiplier, pindexNew->nPrimeChainType, pindexNew->nPrimeChainLength))
+//					return error("\nLoadBlockIndex(): CheckProofOfWork failed: %s", pindexNew->ToString());
 
                 pcursor->Next();
             } else {
