@@ -128,8 +128,6 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action) {
         READWRITE(*(CBlockHeader*)this);
         READWRITE(vtx);
-        READWRITE(VARINT(nPrimeChainType));
-        READWRITE(VARINT(nPrimeChainLength));
     }
 
     void SetNull()
