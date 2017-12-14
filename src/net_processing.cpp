@@ -2605,6 +2605,11 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         for (unsigned int n = 0; n < nCount; n++) {
             vRecv >> headers[n];
             ReadCompactSize(vRecv); // ignore tx count; assume it is 0.
+            if (headers[n].bnPrimeChainMultiplier == 0) {
+              // Broken HEADERS message from old client, ignore
+              LogPrintf("Broken HEADERS message from old client %s, ignore\n", pfrom->addr.ToString().c_str());
+              return true;
+            }
         }
 
         // Headers received via a HEADERS message should be valid, and reflect

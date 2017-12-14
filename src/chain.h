@@ -215,8 +215,8 @@ public:
     uint256 hashMerkleRoot;
     unsigned int nTime;
     unsigned int nBits;
-    unsigned int nNonce;
-	CBigNum bnPrimeChainMultiplier;
+    unsigned int nNonce; 
+    CBigNum bnPrimeChainMultiplier;
     
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     int32_t nSequenceId;
@@ -382,6 +382,7 @@ const CBlockIndex* LastCommonAncestor(const CBlockIndex* pa, const CBlockIndex* 
 class CDiskBlockIndex : public CBlockIndex
 {
 public:
+    static bool needBackgroundUpdateIndex;
     uint256 hashPrev;
 	uint256 hashBlock; // primecoin: persist block hash as well
 
@@ -405,6 +406,7 @@ public:
 
         READWRITE(VARINT(nPrimeChainType));
         READWRITE(VARINT(nPrimeChainLength));
+        READWRITE(VARINT(nMoneySupply));        
         READWRITE(VARINT(nHeight));
         READWRITE(VARINT(nStatus));
         READWRITE(VARINT(nTx));
@@ -422,8 +424,8 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
+        READWRITE(hashBlock);        
         READWRITE(bnPrimeChainMultiplier);
-        READWRITE(hashBlock);
     }
 
     uint256 GetBlockHash() const

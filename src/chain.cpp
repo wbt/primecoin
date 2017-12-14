@@ -6,6 +6,8 @@
 #include <chain.h>
 #include "prime/parameters.h"
 
+bool CDiskBlockIndex::needBackgroundUpdateIndex = false;
+
 /**
  * CChain implementation
  */

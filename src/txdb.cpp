@@ -271,7 +271,7 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
         std::pair<char, uint256> key;
         if (pcursor->GetKey(key) && key.first == DB_BLOCK_INDEX) {
             CDiskBlockIndex diskindex;
-            if (pcursor->GetValue(diskindex)) {
+            if (pcursor->GetValue(diskindex)) {              
                 // Construct block index object
                 CBlockIndex* pindexNew 				= insertBlockIndex(diskindex.GetBlockHash());
                 pindexNew->pprev          			= insertBlockIndex(diskindex.hashPrev);
@@ -286,16 +286,9 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
                 pindexNew->nTime          = diskindex.nTime;
                 pindexNew->nBits          = diskindex.nBits;
                 pindexNew->nNonce         = diskindex.nNonce;
-				pindexNew->bnPrimeChainMultiplier	= diskindex.bnPrimeChainMultiplier;
+                pindexNew->bnPrimeChainMultiplier = diskindex.bnPrimeChainMultiplier;
                 pindexNew->nStatus        = diskindex.nStatus;
                 pindexNew->nTx            = diskindex.nTx;
-
-				// We don't check block as we don't have the ability to check the prime certificate
-				LogPrintf("%s\n", pindexNew->GetBlockHeader().HeaderToString().c_str());
-
-//				if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, pindexNew->bnPrimeChainMultiplier, pindexNew->nPrimeChainType, pindexNew->nPrimeChainLength))
-//					return error("\nLoadBlockIndex(): CheckProofOfWork failed: %s", pindexNew->ToString());
-
                 pcursor->Next();
             } else {
                 return error("%s: failed to read value", __func__);
