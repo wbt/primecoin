@@ -9,13 +9,13 @@
 
 #include <boost/thread/tss.hpp>
 
-#include "bignum.h"
+#include <prime/bignum.h>
 
-#include "util.h"
-#include "chain.h"
-#include "validation.h"
-#include "primitives/transaction.h"
-#include "primitives/block.h"
+#include <util.h>
+#include <chain.h>
+#include <validation.h>
+#include <primitives/transaction.h>
+#include <primitives/block.h>
 
 #if defined(_MSC_VER) || defined(__MSVCRT__)
 #define PRI64d  "I64d"
