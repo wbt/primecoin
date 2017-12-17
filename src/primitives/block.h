@@ -9,7 +9,7 @@
 #include <primitives/transaction.h>
 #include <serialize.h>
 #include <uint256.h>
-#include "prime/bignum.h"
+#include <prime/bignum.h>
 
 class PrimeBlock {
 public:
@@ -28,7 +28,6 @@ public:
     uint32_t nPrimeChainLength;
     uint32_t nWorkTransition;
 };
->>>>>>> 72d87cc94... [Reallocation] Preparation for Design Swaps
 
 /** Nodes collect new transactions into a block, hash them into a hash tree,
  * and scan through nonce values to make the block's hash satisfy proof-of-work

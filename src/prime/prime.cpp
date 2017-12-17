@@ -3,8 +3,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "prime.h"
-#include "bignum.h"
+#include <prime/prime.h>
+#include <prime/bignum.h>
+
+#include <boost/foreach.hpp>
 
 // Prime Table
 std::vector<unsigned int> vPrimes;
@@ -569,7 +571,7 @@ bool MineProbablePrimeChain(CBlock& block, CBigNum& bnFixedMultiplier, bool& fNe
     {
         // Build sieve
         psieve.reset(new CSieveOfEratosthenes(nMaxSieveSize, block.nBits, block.GetHeaderHash(), bnFixedMultiplier));
-        int64_t nSieveRoundLimit = (int)GetArg("-gensieveroundlimitms", 1000);
+        int64_t nSieveRoundLimit = (int)gArgs.GetArg("-gensieveroundlimitms", 1000);
         nStart = GetTimeMicros();
         unsigned int nWeaveTimes = 0;
         while (psieve->Weave() && pindexPrev == chainActive.Tip() && (GetTimeMicros() - nStart < 1000 * nSieveRoundLimit) && (++nWeaveTimes < pminer->nSieveWeaveOptimal));

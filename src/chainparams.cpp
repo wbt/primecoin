@@ -155,6 +155,7 @@ public:
         fRequireStandard = true;
         fMineBlocksOnDemand = false;
 
+<<<<<<< HEAD
         checkpointData = {
             {
                 { 0, uint256S("0x963d17ba4dc753138078a2f56afb3af9674e2546822badff26837db9a0152106")},
@@ -163,6 +164,16 @@ public:
 
         chainTxData = ChainTxData{
             // Data as of block 0000000000000000002d6cca6761c99b3c2e936f9a0e304b7c7651a993f461de (height 506081).
+=======
+        checkpointData = { 
+			{
+				{ 0, uint256S("0x963d17ba4dc753138078a2f56afb3af9674e2546822badff26837db9a0152106")},
+			}
+		};
+
+        chainTxData = ChainTxData {
+            // Data as of block 00000000000000000166d612d5595e2b1cd88d71d695fc580af64d8da8658c23 (height 446482).
+>>>>>>> 61bd03e79... [Merge] Correct errors during (mostly) dirty-clean merge
             1373064429, // * UNIX timestamp of last known number of transactions
             184495391,  // * total number of transactions between genesis and that timestamp
                         //   (the tx=... number in the SetBestChain debug.log lines)
