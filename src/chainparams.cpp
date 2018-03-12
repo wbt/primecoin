@@ -90,7 +90,7 @@ public:
     CMainParams() {
         strNetworkID = "main";
         consensus.nSubsidyHalvingInterval = 210000;
-        consensus.BIP16Height = 173805; // 00000000000000ce80a7e057163a4db1d5ad7b20fb6f598c9597b9665c8fb0d4 - April 1, 2012
+        consensus.BIP16Height = 99999999; // 00000000000000ce80a7e057163a4db1d5ad7b20fb6f598c9597b9665c8fb0d4 - April 1, 2012
         consensus.BIP34Height = 99999999;
         consensus.BIP34Hash = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8");
         consensus.BIP65Height = 99999999;
@@ -155,16 +155,6 @@ public:
         fRequireStandard = true;
         fMineBlocksOnDemand = false;
 
-<<<<<<< HEAD
-        checkpointData = {
-            {
-                { 0, uint256S("0x963d17ba4dc753138078a2f56afb3af9674e2546822badff26837db9a0152106")},
-            }
-        };
-
-        chainTxData = ChainTxData{
-            // Data as of block 0000000000000000002d6cca6761c99b3c2e936f9a0e304b7c7651a993f461de (height 506081).
-=======
         checkpointData = { 
 			{
 				{ 0, uint256S("0x963d17ba4dc753138078a2f56afb3af9674e2546822badff26837db9a0152106")},
@@ -173,11 +163,10 @@ public:
 
         chainTxData = ChainTxData {
             // Data as of block 00000000000000000166d612d5595e2b1cd88d71d695fc580af64d8da8658c23 (height 446482).
->>>>>>> 61bd03e79... [Merge] Correct errors during (mostly) dirty-clean merge
             1373064429, // * UNIX timestamp of last known number of transactions
             184495391,  // * total number of transactions between genesis and that timestamp
                         //   (the tx=... number in the SetBestChain debug.log lines)
-            3.5         // * estimated number of transactions per second after that timestamp
+            3.1         // * estimated number of transactions per second after that timestamp
         };
     }
 };

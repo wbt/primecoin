@@ -25,6 +25,8 @@
 
 class CScript;
 
+static const unsigned int MAX_SIZE = 0x02000000;
+
 /**
  * Dummy data type to identify deserializing constructors.
  *
