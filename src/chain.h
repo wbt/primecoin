@@ -213,9 +213,9 @@ public:
     //! block header
     int32_t nVersion;
     uint256 hashMerkleRoot;
-    unsigned int nTime;
-    unsigned int nBits;
-    unsigned int nNonce; 
+    uint32_t nTime;
+    uint32_t nBits;
+    uint32_t nNonce; 
     CBigNum bnPrimeChainMultiplier;
     
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.

@@ -4,7 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <chain.h>
-#include "prime/parameters.h"
+#include <prime/parameters.h>
 
 bool CDiskBlockIndex::needBackgroundUpdateIndex = false;
 
