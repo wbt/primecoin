@@ -20,10 +20,10 @@ private:
 	std::string tickerName = "XPM";
 
 public:
-	uint256 GetPrimeBlockProof(const CBlockIndex& block);
-	unsigned int GetPrimeWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock);
-	bool CheckPrimeProofs(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnProbablePrime, unsigned int& nChainType, unsigned int& nChainLength);
-	CAmount GetPrimeBlockValue(int nBits);
+	uint256 GetPrimeBlockProof(const CBlockIndex& block, const Consensus::Params& consensus_params);
+	unsigned int GetPrimeWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& consensus_params);
+	bool CheckPrimeProofs(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnProbablePrime, unsigned int& nChainType, unsigned int& nChainLength, const Consensus::Params& params);
+	CAmount GetPrimeBlockValue(int nBits, const Consensus::Params& consensus_params);
 /*
 	void static PrimeMiner(CWallet *pwallet);
 	void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads);

@@ -152,17 +152,14 @@ static bool EulerLagrangeLifchitzPrimalityTest(const CBigNum& n, bool fSophieGer
 // Proof-of-work Target (prime chain target):
 //   format - 32 bit, 8 length bits, 24 fractional length bits
 
-unsigned int nTargetInitialLength = 7; // initial chain length target
-unsigned int nTargetMinLength = 6;     // minimum chain length target
-
-unsigned int TargetGetLimit()
+unsigned int TargetGetLimit(const Consensus::Params& consensus_params)
 {
-    return (nTargetMinLength << nFractionalBits);
+    return (consensus_params.nTargetMinLength << nFractionalBits);
 }
 
-unsigned int TargetGetInitial()
+unsigned int TargetGetInitial(const Consensus::Params& consensus_params)
 {
-    return (nTargetInitialLength << nFractionalBits);
+    return (consensus_params.nTargetInitialLength << nFractionalBits);
 }
 
 unsigned int TargetGetLength(unsigned int nBits)
@@ -186,9 +183,9 @@ void TargetIncrementLength(unsigned int& nBits)
     nBits += (1 << nFractionalBits);
 }
 
-void TargetDecrementLength(unsigned int& nBits)
+static void TargetDecrementLength(unsigned int& nBits, const Consensus::Params& consensus_params)
 {
-    if (TargetGetLength(nBits) > nTargetMinLength)
+    if (TargetGetLength(nBits) > consensus_params.nTargetMinLength)
         nBits -= (1 << nFractionalBits);
 }
 
@@ -233,12 +230,12 @@ unsigned int TargetFromInt(unsigned int nLength)
 // Primecoin mint rate is determined by target
 //   mint = 999 / (target length ** 2)
 // Inflation is controlled via Moore's Law
-bool TargetGetMint(unsigned int nBits, uint64_t& nMint)
+bool TargetGetMint(unsigned int nBits, uint64_t& nMint, const Consensus::Params& consensus_params)
 {
     nMint = 0;
     static uint64_t nMintLimit = 999llu * COIN;
     CBigNum bnMint = nMintLimit;
-    if (TargetGetLength(nBits) < nTargetMinLength) {
+    if (TargetGetLength(nBits) < consensus_params.nTargetMinLength) {
         LogPrint(BCLog::PRIME, "TargetGetMint() : length below minimum required, nBits=%08x", nBits);
         return false;
 	}
@@ -257,7 +254,7 @@ bool TargetGetMint(unsigned int nBits, uint64_t& nMint)
 }
 
 // Get next target value
-bool TargetGetNext(unsigned int nBits, int64_t nInterval, int64_t nTargetSpacing, int64_t nActualSpacing, unsigned int& nBitsNext)
+bool TargetGetNext(unsigned int nBits, int64_t nInterval, int64_t nTargetSpacing, int64_t nActualSpacing, unsigned int& nBitsNext, const Consensus::Params& consensus_params)
 {
     nBitsNext = nBits;
     // Convert length into fractional difficulty
@@ -281,10 +278,10 @@ bool TargetGetNext(unsigned int nBits, int64_t nInterval, int64_t nTargetSpacing
         TargetIncrementLength(nBitsNext);
     }
     // Step down length if fractional at minimum
-    else if (nFractionalDifficultyNew == nFractionalDifficultyMin && TargetGetLength(nBitsNext) > nTargetMinLength)
+    else if (nFractionalDifficultyNew == nFractionalDifficultyMin && TargetGetLength(nBitsNext) > consensus_params.nTargetMinLength)
     {
         nFractionalDifficultyNew = nFractionalDifficultyThreshold;
-        TargetDecrementLength(nBitsNext);
+        TargetDecrementLength(nBitsNext, consensus_params);
     }
     // Convert fractional difficulty back to length
     if (!TargetSetFractionalDifficulty(nFractionalDifficultyNew, nBitsNext)) {
@@ -374,10 +371,10 @@ bool ProbablePrimeChainTest(const CBigNum& bnPrimeChainOrigin, unsigned int nBit
 }
 
 // Check prime proof-of-work
-bool CheckPrimeProofOfWork(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnPrimeChainMultiplier, unsigned int& nChainType, unsigned int& nChainLength)
+bool CheckPrimeProofOfWork(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnPrimeChainMultiplier, unsigned int& nChainType, unsigned int& nChainLength, const Consensus::Params& consensus_params)
 {
     // Check target
-    if (TargetGetLength(nBits) < nTargetMinLength || TargetGetLength(nBits) > 99) {
+    if (TargetGetLength(nBits) < consensus_params.nTargetMinLength || TargetGetLength(nBits) > 99) {
         LogPrint(BCLog::PRIME, "CheckPrimeProofOfWork() : invalid chain length target %s", TargetToString(nBits).c_str());
         return false;
 	}
