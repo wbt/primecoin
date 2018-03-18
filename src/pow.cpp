@@ -13,12 +13,12 @@
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
-    return prime.GetPrimeWorkRequired(pindexLast, pblock);
+    return prime.GetPrimeWorkRequired(pindexLast, pblock, params);
 }
 
-bool CheckProofOfWork(uint256 hashBlockHeader, unsigned int nBits, const CBigNum bnProbablePrime, unsigned int nChainType, unsigned int nChainLength)
+bool CheckProofOfWork(uint256 hashBlockHeader, unsigned int nBits, const CBigNum bnProbablePrime, unsigned int nChainType, unsigned int nChainLength, const Consensus::Params& consensus_params)
 {
-    if (!CheckPrimeProofOfWork(hashBlockHeader, nBits, bnProbablePrime, nChainType, nChainLength))
+    if (!CheckPrimeProofOfWork(hashBlockHeader, nBits, bnProbablePrime, nChainType, nChainLength, consensus_params))
         return error("CheckProofOfWork() : check failed for prime proof-of-work");
     
     return true;

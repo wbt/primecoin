@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "chainparams.h"
 #include "util.h"
 #include "streams.h"
 #include "parameters.h"
@@ -12,12 +13,12 @@ using namespace std;
 
 PrimeCoin prime;
 
-uint256 PrimeCoin::GetPrimeBlockProof(const CBlockIndex& block)
+uint256 PrimeCoin::GetPrimeBlockProof(const CBlockIndex& block, const Consensus::Params& consensus_params)
 {
     uint64_t nFractionalDifficulty = TargetGetFractionalDifficulty(block.nBits);
     CBigNum bnWork = 256;
 
-    for (unsigned int nCount = nTargetMinLength; nCount < TargetGetLength(block.nBits); nCount++)
+    for (unsigned int nCount = consensus_params.nTargetMinLength; nCount < TargetGetLength(block.nBits); nCount++)
         bnWork *= nWorkTransitionRatio;
 
     bnWork *= ((uint64_t) nWorkTransitionRatio) * nFractionalDifficulty;
@@ -26,9 +27,9 @@ uint256 PrimeCoin::GetPrimeBlockProof(const CBlockIndex& block)
     return bnWork.getuint256();
 }
 
-unsigned int PrimeCoin::GetPrimeWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
+unsigned int PrimeCoin::GetPrimeWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& consensus_params)
 {
-    unsigned int nBits = TargetGetLimit();
+    unsigned int nBits = TargetGetLimit(consensus_params);
 
     // Genesis block
     if (pindexLast == NULL)
@@ -37,35 +38,35 @@ unsigned int PrimeCoin::GetPrimeWorkRequired(const CBlockIndex* pindexLast, cons
     const CBlockIndex* pindexPrev = pindexLast;
 
     if (pindexPrev->pprev == NULL)
-        return TargetGetInitial(); // first block
+        return TargetGetInitial(consensus_params); // first block
 
     const CBlockIndex* pindexPrevPrev = pindexPrev->pprev;
 
     if (pindexPrevPrev->pprev == NULL)
-        return TargetGetInitial(); // second block
+        return TargetGetInitial(consensus_params); // second block
 
     // Bitcoin: continuous target adjustment on every block
     int64_t nInterval = nTargetTimespan / nTargetSpacing;
     int64_t nActualSpacing = pindexPrev->GetBlockTime() - pindexPrevPrev->GetBlockTime();
-    if (!TargetGetNext(pindexPrev->nBits, nInterval, nTargetSpacing, nActualSpacing, nBits))
+    if (!TargetGetNext(pindexPrev->nBits, nInterval, nTargetSpacing, nActualSpacing, nBits, consensus_params))
         return error("GetNextWorkRequired() : failed to get next target");
 
     return nBits;
 }
 
-bool PrimeCoin::CheckPrimeProofs(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnProbablePrime, unsigned int& nChainType, unsigned int& nChainLength)
+bool PrimeCoin::CheckPrimeProofs(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnProbablePrime, unsigned int& nChainType, unsigned int& nChainLength, const Consensus::Params& params)
 {
-    if (!CheckPrimeProofOfWork(hashBlockHeader, nBits, bnProbablePrime, nChainType, nChainLength))
+    if (!CheckPrimeProofOfWork(hashBlockHeader, nBits, bnProbablePrime, nChainType, nChainLength, params))
         return error("CheckProofOfWork() : check failed for prime proof-of-work");
 
     return true;
 }
 
-CAmount PrimeCoin::GetPrimeBlockValue(int nBits)
+CAmount PrimeCoin::GetPrimeBlockValue(int nBits, const Consensus::Params& consensus_params)
 {
     uint64_t nSubsidy = 0;
 
-    if (!TargetGetMint(nBits, nSubsidy))
+    if (!TargetGetMint(nBits, nSubsidy, consensus_params))
         error("GetBlockValue() : invalid mint value");
 
     return ((CAmount)nSubsidy);

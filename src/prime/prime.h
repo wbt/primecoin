@@ -33,9 +33,6 @@ static const CBigNum bnOne = 1;
 static const CBigNum bnPrimeMax = (bnOne << 2000) - 1;
 static const CBigNum bnPrimeMin = (bnOne << 255);
 
-extern unsigned int nTargetInitialLength;
-extern unsigned int nTargetMinLength;
-
 // Generate small prime table
 void GeneratePrimeTable();
 // Get next prime number of p
@@ -64,8 +61,8 @@ static const uint64_t nFractionalDifficultyMax = (1llu << (nFractionalBits + 32)
 static const uint64_t nFractionalDifficultyMin = (1llu << 32);
 static const uint64_t nFractionalDifficultyThreshold = (1llu << (8 + 32));
 static const unsigned int nWorkTransitionRatio = 32;
-unsigned int TargetGetLimit();
-unsigned int TargetGetInitial();
+unsigned int TargetGetLimit(const Consensus::Params& consensus_params);
+unsigned int TargetGetInitial(const Consensus::Params& consensus_params);
 unsigned int TargetGetLength(unsigned int nBits);
 bool TargetSetLength(unsigned int nLength, unsigned int& nBits);
 unsigned int TargetGetFractional(unsigned int nBits);
@@ -73,8 +70,8 @@ uint64_t TargetGetFractionalDifficulty(unsigned int nBits);
 bool TargetSetFractionalDifficulty(uint64_t nFractionalDifficulty, unsigned int& nBits);
 std::string TargetToString(unsigned int nBits);
 unsigned int TargetFromInt(unsigned int nLength);
-bool TargetGetMint(unsigned int nBits, uint64_t& nMint);
-bool TargetGetNext(unsigned int nBits, int64_t nInterval, int64_t nTargetSpacing, int64_t nActualSpacing, unsigned int& nBitsNext);
+bool TargetGetMint(unsigned int nBits, uint64_t& nMint, const Consensus::Params& consensus_params);
+bool TargetGetNext(unsigned int nBits, int64_t nInterval, int64_t nTargetSpacing, int64_t nActualSpacing, unsigned int& nBitsNext, const Consensus::Params& consensus_params);
 
 // Check prime proof-of-work
 enum // prime chain type
@@ -83,7 +80,7 @@ enum // prime chain type
     PRIME_CHAIN_CUNNINGHAM2 = 2u,
     PRIME_CHAIN_BI_TWIN     = 3u,
 };
-bool CheckPrimeProofOfWork(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnPrimeChainMultiplier, unsigned int& nChainType, unsigned int& nChainLength);
+bool CheckPrimeProofOfWork(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnPrimeChainMultiplier, unsigned int& nChainType, unsigned int& nChainLength, const Consensus::Params& consensus_params);
 bool CheckPrimeProofOfWorkV02Compatibility(uint256 hashBlockHeader);
 
 // prime target difficulty value for visualization
