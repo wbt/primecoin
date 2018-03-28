@@ -9,6 +9,9 @@
 #include <script/interpreter.h>
 #include <consensus/validation.h>
 
+/** Primecoin: minimul txout value. */
+static const CAmount MIN_TXOUT_AMOUNT = 1000000;
+
 // TODO remove the following dependencies
 #include <chain.h>
 #include <coins.h>
@@ -173,6 +176,8 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
     {
         if (txout.nValue < 0)
             return state.DoS(100, false, REJECT_INVALID, "bad-txns-vout-negative");
+        if (txout.nValue < MIN_TXOUT_AMOUNT)
+            return state.DoS(100, false, REJECT_INVALID, "bad-txns-vout-belowminimum");
         if (txout.nValue > MAX_MONEY)
             return state.DoS(100, false, REJECT_INVALID, "bad-txns-vout-toolarge");
         nValueOut += txout.nValue;
