@@ -28,7 +28,7 @@ CAmount GetMinimumFee(unsigned int nTxBytes, const CCoinControl& coin_control, c
        4. nTxConfirmTarget (user-set global variable)
        The first parameter that is set is used.
     */
-    CAmount fee_needed;
+    CAmount fee_needed = 0;
     if (coin_control.m_feerate) { // 1.
         fee_needed = coin_control.m_feerate->GetFee(nTxBytes);
         if (feeCalc) feeCalc->reason = FeeReason::PAYTXFEE;
@@ -39,7 +39,8 @@ CAmount GetMinimumFee(unsigned int nTxBytes, const CCoinControl& coin_control, c
         fee_needed = ::payTxFee.GetFee(nTxBytes);
         if (feeCalc) feeCalc->reason = FeeReason::PAYTXFEE;
     }
-    else { // 2. or 4.
+    // Primecoin: disable smart fee estimation here
+    else if (false) { // 2. or 4.
         // We will use smart fee estimation
         unsigned int target = coin_control.m_confirm_target ? *coin_control.m_confirm_target : ::nTxConfirmTarget;
         // By default estimates are economical iff we are signaling opt-in-RBF
