@@ -98,5 +98,7 @@ std::string FormatSubVersion(const std::string& name, int nClientVersion, const 
         ss << ")";
     }
     ss << "/";
+    ss << "Primecoin:" << FormatVersion(PRIMECOIN_VERSION);
+    ss << "/";
     return ss.str();
 }
