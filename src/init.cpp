@@ -1697,6 +1697,13 @@ bool AppInitMain()
     connOptions.nReceiveFloodSize = 1000*gArgs.GetArg("-maxreceivebuffer", DEFAULT_MAXRECEIVEBUFFER);
     connOptions.m_added_nodes = gArgs.GetArgs("-addnode");
 
+    // TEMPORARY: hardcode primecoin-0.1.3 intermediary nodes
+    connOptions.m_added_nodes.push_back("89.179.119.195");
+    connOptions.m_added_nodes.push_back("51.38.36.126");
+    connOptions.m_added_nodes.push_back("194.87.96.132");
+    connOptions.m_added_nodes.push_back("46.101.219.111");
+    connOptions.m_added_nodes.push_back("192.241.151.110");
+
     connOptions.nMaxOutboundTimeframe = nMaxOutboundTimeframe;
     connOptions.nMaxOutboundLimit = nMaxOutboundLimit;
 
