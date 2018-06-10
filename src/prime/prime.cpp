@@ -370,6 +370,43 @@ bool ProbablePrimeChainTest(const CBigNum& bnPrimeChainOrigin, unsigned int nBit
     return (nChainLengthCunningham1 >= nBits || nChainLengthCunningham2 >= nBits || nChainLengthBiTwin >= nBits);
 }
 
+// Fast check block header integrity
+bool CheckBlockHeaderIntegrity(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnPrimeChainMultiplier, const Consensus::Params& consensus_params)
+{
+    // Check target
+    if (TargetGetLength(nBits) < consensus_params.nTargetMinLength || TargetGetLength(nBits) > 99) {
+        LogPrint(BCLog::PRIME, "CheckBlockHeaderIntegrity() : invalid chain length target %s", TargetToString(nBits).c_str());
+        return false;
+    }
+
+    // Check header hash limit
+    if (hashBlockHeader < ArithToUint256(hashBlockHeaderLimit)) {
+        LogPrint(BCLog::PRIME, "CheckBlockHeaderIntegrity() : block header hash under limit");
+        return false;
+    }
+    // Check target for prime proof-of-work
+    CBigNum bnPrimeChainOrigin = CBigNum(hashBlockHeader) * bnPrimeChainMultiplier;
+    if (bnPrimeChainOrigin < bnPrimeMin) {
+        LogPrint(BCLog::PRIME, "CheckBlockHeaderIntegrity() : prime too small");
+        return false;
+    }
+    // First prime in chain must not exceed cap
+    if (bnPrimeChainOrigin > bnPrimeMax) {
+        LogPrint(BCLog::PRIME, "CheckBlockHeaderIntegrity() : prime too big");
+        return false;
+    }
+
+    // Proof-of-work check contains Fermat test of prime chain origin, it takes a lot of time,
+    // typical CPU can do ~60-70k Fermat tests per second in single thread, current block
+    // height at moment near 2.7M. So, we can't use Fermat test at startup for checking block headers
+    // in index database. Also, we can't use trial division test for preliminary check, because
+    // prime chain origin can be Carmichael number than can pass CheckPrimeProofOfWork function,
+    // but not pass another primality tests.
+
+    // For adding any check here, we need add it to CheckPrimeProofOfWork before
+    return true;
+}
+
 // Check prime proof-of-work
 bool CheckPrimeProofOfWork(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnPrimeChainMultiplier, unsigned int& nChainType, unsigned int& nChainLength, const Consensus::Params& consensus_params)
 {
