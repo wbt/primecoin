@@ -13,6 +13,7 @@
 #include <util.h>
 #include <ui_interface.h>
 #include <init.h>
+#include <prime/prime.h>
 
 #include <stdint.h>
 
@@ -289,6 +290,11 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
                 pindexNew->bnPrimeChainMultiplier = diskindex.bnPrimeChainMultiplier;
                 pindexNew->nStatus        = diskindex.nStatus;
                 pindexNew->nTx            = diskindex.nTx;
+
+                CBlockHeader header(pindexNew->GetBlockHeader());
+                if (!CheckBlockHeaderIntegrity(header.GetHeaderHash(), pindexNew->nBits, pindexNew->bnPrimeChainMultiplier, consensusParams))
+                    return error("%s: CheckBlockHeaderIntegrity failed: %s", __func__, pindexNew->ToString());
+
                 pcursor->Next();
             } else {
                 return error("%s: failed to read value", __func__);
