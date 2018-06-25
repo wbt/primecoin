@@ -223,6 +223,20 @@ class BlockDataCopier:
 			blk_hdr = self.inF.read(80)
 			inExtent = BlockExtent(self.inFn, self.inF.tell(), inhdr, blk_hdr, inLen)
 
+			# Get bnPrimeChainMultiplier size (look WriteCompactSize in serialize.h)
+			bnSize = self.inF.read(1)
+			bnSizeLen = struct.unpack("<B", bnSize)
+			if (bnSizeLen[0] >= 253):
+				print("Unsupported bnPrimeChainMultiplier length")
+				return
+
+			# Read bnPrimeChainMultiplier data
+			bnPrimeChainMultiplier = self.inF.read(bnSizeLen[0])
+
+			# Concatenate header, adjust inLen
+			blk_hdr = blk_hdr + bnSize + bnPrimeChainMultiplier
+			inLen = inLen - bnSizeLen[0] - 1
+
 			self.hash_str = calc_hash_str(blk_hdr)
 			if not self.hash_str in blkmap:
 				# Because blocks can be written to files out-of-order as of 0.10, the script
