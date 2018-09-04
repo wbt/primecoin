@@ -1,43 +1,69 @@
-(note: this is a temporary file, to be added-to by anybody, and deleted at
-release time)
+Bitcoin Core version 0.16.x is now available from:
 
-0.8.6 changes
-=============
+  <https://bitcoincore.org/bin/bitcoin-core-0.16.x/>
 
-- Default block size increase for miners
-  (see https://gist.github.com/gavinandresen/7670433#086-accept-into-block)
+This is a new major version release, including new features, various bugfixes
+and performance improvements, as well as updated translations.
 
-- Remove the all-outputs-must-be-greater-than-CENT-to-qualify-as-free rule for relaying
-  (see https://gist.github.com/gavinandresen/7670433#086-relaying)
+Please report bugs using the issue tracker at GitHub:
 
-- Lower maximum size for free transaction creation
-  (see https://gist.github.com/gavinandresen/7670433#086-wallet)
+  <https://github.com/bitcoin/bitcoin/issues>
 
-- OSX block chain database corruption fixes
-  - Update leveldb to 1.13
-  - Use fcntl with `F_FULLSYNC` instead of fsync on OSX
-  - Use native Darwin memory barriers
-  - Replace use of mmap in leveldb for improved reliability (only on OSX)
+To receive security and update notifications, please subscribe to:
 
-- Fix nodes forwarding transactions with empty vins and getting banned
+  <https://bitcoincore.org/en/list/announcements/join/>
 
-- Network code performance and robustness improvements
+How to Upgrade
+==============
 
-- Additional debug.log logging for diagnosis of network problems, log timestamps by default
+If you are running an older version, shut it down. Wait until it has completely
+shut down (which might take a few minutes for older versions), then run the
+installer (on Windows) or just copy over `/Applications/Bitcoin-Qt` (on Mac)
+or `bitcoind`/`bitcoin-qt` (on Linux).
 
-- Fix Bitcoin-Qt startup crash when clicking dock icon on OSX 
+The first time you run version 0.15.0 or newer, your chainstate database will be converted to a
+new format, which will take anywhere from a few minutes to half an hour,
+depending on the speed of your machine.
 
-- Fix memory leaks in CKey::SetCompactSignature() and Key::SignCompact()
+Note that the block database format also changed in version 0.8.0 and there is no
+automatic upgrade code from before version 0.8 to version 0.15.0 or higher. Upgrading
+directly from 0.7.x and earlier without re-downloading the blockchain is not supported.
+However, as usual, old wallet versions are still supported.
 
-- Fix rare GUI crash on send
+Downgrading warning
+-------------------
 
-- Various small GUI, documentation and build fixes
+Wallets created in 0.16 and later are not compatible with versions prior to 0.16
+and will not work if you try to use newly created wallets in older versions. Existing
+wallets that were created with older versions are not affected by this.
 
-Warning
---------
+Compatibility
+==============
 
-- There have been frequent reports of users running out of virtual memory on 32-bit systems
-  during the initial sync.
-  Hence it is recommended to use a 64-bit executable if possible.
-  A 64-bit executable for Windows is planned for 0.9.
+Bitcoin Core is extensively tested on multiple operating systems using
+the Linux kernel, macOS 10.8+, and Windows Vista and later. Windows XP is not supported.
 
+Bitcoin Core should also work on most other Unix-like systems but is not
+frequently tested on them.
+
+Notable changes
+===============
+
+Example item
+-------------
+
+Example item for a notable change.
+
+0.16.x change log
+------------------
+
+(to be filled in at release time)
+
+Credits
+=======
+
+Thanks to everyone who directly contributed to this release:
+
+(to be filled in at release time)
+
+As well as everyone that helped translating on [Transifex](https://www.transifex.com/projects/p/bitcoin/).

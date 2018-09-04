@@ -1,33 +1,36 @@
-Name Primecoin
+Name "Primecoin Core (-bit)"
 
 RequestExecutionLevel highest
 SetCompressor /SOLID lzma
 
 # General Symbol Definitions
 !define REGKEY "SOFTWARE\$(^Name)"
-!define VERSION 0.1.2
-!define COMPANY "Primecoin project"
-!define URL http://primecoin.org/
+!define VERSION 0.16.1
+!define COMPANY "Primecoin Core project"
+!define URL http://primecoin.io/
 
 # MUI Symbol Definitions
-!define MUI_ICON "../share/pixmaps/primecoin.ico"
-!define MUI_WELCOMEFINISHPAGE_BITMAP "../share/pixmaps/nsis-zeta.bmp"
+!define MUI_ICON "/Users/zhengjun/project/blockchain/primecoin-core_addr/share/pixmaps/bitcoin.ico"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "/Users/zhengjun/project/blockchain/primecoin-core_addr/share/pixmaps/nsis-wizard.bmp"
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_RIGHT
-!define MUI_HEADERIMAGE_BITMAP "../share/pixmaps/nsis-header.bmp"
+!define MUI_HEADERIMAGE_BITMAP "/Users/zhengjun/project/blockchain/primecoin-core_addr/share/pixmaps/nsis-header.bmp"
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT HKLM
 !define MUI_STARTMENUPAGE_REGISTRY_KEY ${REGKEY}
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME StartMenuGroup
-!define MUI_STARTMENUPAGE_DEFAULTFOLDER Primecoin
-!define MUI_FINISHPAGE_RUN $INSTDIR\primecoin-qt.exe
+!define MUI_STARTMENUPAGE_DEFAULTFOLDER "Primecoin Core"
+!define MUI_FINISHPAGE_RUN $INSTDIR\primecoin-qt
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
-!define MUI_UNWELCOMEFINISHPAGE_BITMAP "../share/pixmaps/nsis-zeta.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "/Users/zhengjun/project/blockchain/primecoin-core_addr/share/pixmaps/nsis-wizard.bmp"
 !define MUI_UNFINISHPAGE_NOAUTOCLOSE
 
 # Included files
 !include Sections.nsh
 !include MUI2.nsh
+!if "" == "64"
+!include x64.nsh
+!endif
 
 # Variables
 Var StartMenuGroup
@@ -45,14 +48,18 @@ Var StartMenuGroup
 !insertmacro MUI_LANGUAGE English
 
 # Installer attributes
-OutFile primecoin-0.1.2-win32-setup.exe
-InstallDir $PROGRAMFILES\Primecoin
+OutFile /Users/zhengjun/project/blockchain/primecoin-core_addr/primecoin-${VERSION}-win-setup.exe
+!if "" == "64"
+InstallDir $PROGRAMFILES64\Bitcoin
+!else
+InstallDir $PROGRAMFILES\Bitcoin
+!endif
 CRCCheck on
 XPStyle on
 BrandingText " "
 ShowInstDetails show
-VIProductVersion 0.1.2.0
-VIAddVersionKey ProductName Primecoin
+VIProductVersion ${VERSION}.0
+VIAddVersionKey ProductName "Primecoin Core"
 VIAddVersionKey ProductVersion "${VERSION}"
 VIAddVersionKey CompanyName "${COMPANY}"
 VIAddVersionKey CompanyWebsite "${URL}"
@@ -66,19 +73,16 @@ ShowUninstDetails show
 Section -Main SEC0000
     SetOutPath $INSTDIR
     SetOverwrite on
-    File ../release/primecoin-qt.exe
-    File /oname=COPYING.txt ../COPYING
-    File /oname=readme.txt ../doc/README_windows.txt
+    File /Users/zhengjun/project/blockchain/primecoin-core_addr/release/primecoin-qt
+    File /oname=COPYING.txt /Users/zhengjun/project/blockchain/primecoin-core_addr/COPYING
+    File /oname=readme.txt /Users/zhengjun/project/blockchain/primecoin-core_addr/doc/README_windows.txt
     SetOutPath $INSTDIR\daemon
-    File ../src/primecoind.exe
-    SetOutPath $INSTDIR\src
-    File /r /x *.exe /x *.o ../src\*.*
+    File /Users/zhengjun/project/blockchain/primecoin-core_addr/release/primecoind
+    File /Users/zhengjun/project/blockchain/primecoin-core_addr/release/primecoin-cli
+    SetOutPath $INSTDIR\doc
+    File /r /Users/zhengjun/project/blockchain/primecoin-core_addr/doc\*.*
     SetOutPath $INSTDIR
     WriteRegStr HKCU "${REGKEY}\Components" Main 1
-
-    # Remove old wxwidgets-based-bitcoin executable and locales:
-    Delete /REBOOTOK $INSTDIR\primecoin.exe
-    RMDir /r /REBOOTOK $INSTDIR\locale
 SectionEnd
 
 Section -post SEC0001
@@ -87,8 +91,9 @@ Section -post SEC0001
     WriteUninstaller $INSTDIR\uninstall.exe
     !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
     CreateDirectory $SMPROGRAMS\$StartMenuGroup
-    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\Primecoin.lnk" $INSTDIR\primecoin-qt.exe
-    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\Uninstall Primecoin.lnk" $INSTDIR\uninstall.exe
+    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\$(^Name).lnk" $INSTDIR\primecoin-qt
+    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\Primecoin Core (testnet, -bit).lnk" "$INSTDIR\primecoin-qt" "-testnet" "$INSTDIR\primecoin-qt" 1
+    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\Uninstall $(^Name).lnk" $INSTDIR\uninstall.exe
     !insertmacro MUI_STARTMENU_WRITE_END
     WriteRegStr HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" DisplayName "$(^Name)"
     WriteRegStr HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" DisplayVersion "${VERSION}"
@@ -99,9 +104,9 @@ Section -post SEC0001
     WriteRegDWORD HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" NoModify 1
     WriteRegDWORD HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" NoRepair 1
     WriteRegStr HKCR "primecoin" "URL Protocol" ""
-    WriteRegStr HKCR "primecoin" "" "URL:Primecoin"
-    WriteRegStr HKCR "primecoin\DefaultIcon" "" $INSTDIR\primecoin-qt.exe
-    WriteRegStr HKCR "primecoin\shell\open\command" "" '"$INSTDIR\primecoin-qt.exe" "%1"'
+    WriteRegStr HKCR "primecoin" "" "URL:Bitcoin"
+    WriteRegStr HKCR "primecoin\DefaultIcon" "" $INSTDIR\primecoin-qt
+    WriteRegStr HKCR "primecoin\shell\open\command" "" '"$INSTDIR\primecoin-qt" "%1"'
 SectionEnd
 
 # Macro for selecting uninstaller sections
@@ -119,19 +124,20 @@ done${UNSECTION_ID}:
 
 # Uninstaller sections
 Section /o -un.Main UNSEC0000
-    Delete /REBOOTOK $INSTDIR\primecoin-qt.exe
+    Delete /REBOOTOK $INSTDIR\primecoin-qt
     Delete /REBOOTOK $INSTDIR\COPYING.txt
     Delete /REBOOTOK $INSTDIR\readme.txt
     RMDir /r /REBOOTOK $INSTDIR\daemon
-    RMDir /r /REBOOTOK $INSTDIR\src
+    RMDir /r /REBOOTOK $INSTDIR\doc
     DeleteRegValue HKCU "${REGKEY}\Components" Main
 SectionEnd
 
 Section -un.post UNSEC0001
     DeleteRegKey HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)"
-    Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\Uninstall Primecoin.lnk"
-    Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\Primecoin.lnk"
-    Delete /REBOOTOK "$SMSTARTUP\Primecoin.lnk"
+    Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\Uninstall $(^Name).lnk"
+    Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\$(^Name).lnk"
+    Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\Primecoin Core (testnet, -bit).lnk"
+    Delete /REBOOTOK "$SMSTARTUP\Bitcoin.lnk"
     Delete /REBOOTOK $INSTDIR\uninstall.exe
     Delete /REBOOTOK $INSTDIR\debug.log
     Delete /REBOOTOK $INSTDIR\db.log
@@ -152,6 +158,15 @@ SectionEnd
 # Installer functions
 Function .onInit
     InitPluginsDir
+!if "" == "64"
+    ${If} ${RunningX64}
+      ; disable registry redirection (enable access to 64-bit portion of registry)
+      SetRegView 64
+    ${Else}
+      MessageBox MB_OK|MB_ICONSTOP "Cannot install 64-bit version on a 32-bit system."
+      Abort
+    ${EndIf}
+!endif
 FunctionEnd
 
 # Uninstaller functions
