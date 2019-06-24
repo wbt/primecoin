@@ -26,7 +26,7 @@ See readme-qt.rst for instructions on building Bitcoin-Qt, the graphical user in
 Additional Dependencies for Mad Prime Solo Mining Server
 --------------------------------------------------------
 sudo apt install libzmq3-dev libczmq-dev
-sudo apt install libprotobuf-dev protobuf-compilers
+sudo apt install libprotobuf-dev protobuf-compiler
 
 Dependencies
 ---------------------
@@ -58,7 +58,7 @@ Licenses of statically linked libraries:
 
 - Versions used in this release:
 -  GCC           4.3.3
--  OpenSSL       1.0.1c
+-  OpenSSL       0.9.8k
 -  Berkeley DB   4.8.30.NC
 -  Boost         1.37
 -  miniupnpc     1.6
