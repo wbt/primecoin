@@ -228,6 +228,7 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
                 pindexNew->bnPrimeChainMultiplier = diskindex.bnPrimeChainMultiplier;
                 pindexNew->nStatus        = diskindex.nStatus;
                 pindexNew->nTx            = diskindex.nTx;
+                primeOriginIndex.insert(make_pair(diskindex.GetBlockHeader().GetPrimeOrigin(), pindexNew));
 
                 CBlockHeader header(pindexNew->GetBlockHeader());
                 if (!CheckBlockHeaderIntegrity(header.GetHeaderHash(), pindexNew->nBits, pindexNew->bnPrimeChainMultiplier))
