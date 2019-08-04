@@ -228,9 +228,9 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
                 pindexNew->bnPrimeChainMultiplier = diskindex.bnPrimeChainMultiplier;
                 pindexNew->nStatus        = diskindex.nStatus;
                 pindexNew->nTx            = diskindex.nTx;
-                primeOriginIndex.insert(make_pair(diskindex.GetBlockHeader().GetPrimeOrigin(), pindexNew));
 
                 CBlockHeader header(pindexNew->GetBlockHeader());
+                primeOriginIndex.insert(make_pair(header.GetPrimeOrigin(), pindexNew));
                 if (!CheckBlockHeaderIntegrity(header.GetHeaderHash(), pindexNew->nBits, pindexNew->bnPrimeChainMultiplier))
                     return error("%s: CheckBlockHeaderIntegrity failed: %s", __func__, pindexNew->ToString().c_str());
                 
@@ -250,6 +250,23 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
         }
     }
     delete pcursor;
+
+    auto E = primeOriginIndex.end();
+    for (auto I = primeOriginIndex.begin(); I != E; ++I) {
+      auto J = I;
+      for (++J; J != E && J->first == I->first; ++J) {
+        CBlockIndex *lo = I->second;
+        CBlockIndex *hi = J->second;
+        if (lo->nHeight > hi->nHeight)
+          std::swap(lo, hi);
+
+        while (hi && hi->nHeight != lo->nHeight)
+          hi = hi->pprev;
+
+        if (lo == hi)
+          return error("LoadBlockIndex() : Reused prime origin %s found, index is broken", I->first.ToString(16).c_str());
+      }
+    }
 
     return true;
 }

@@ -2132,20 +2132,15 @@ bool CBlock::AcceptBlock(CValidationState &state, CDiskBlockPos *dbp)
 
         // Check reusing of prime origin
         CBigNum primeOrigin = GetPrimeOrigin();
-        printf("primeOriginIndex.size = %zu\n", primeOriginIndex.size());
-        for (auto I = primeOriginIndex.lower_bound(primeOrigin); I != primeOriginIndex.end(); ++I) {
-          if (I->first != primeOrigin)
-            break;
-
+        for (auto I = primeOriginIndex.lower_bound(primeOrigin); I != primeOriginIndex.end() && I->first == primeOrigin; ++I) {
           // Can't accept block if chain have block with same prime origin
-          CBlockIndex *poIndex = I->second;
-          if (poIndex->nHeight < nHeight) {
-            while (poIndex && poIndex->nHeight < pindexPrev->nHeight)
-              poIndex = poIndex->pnext;
+          CBlockIndex *lo = I->second;
+          CBlockIndex *hi = pindexPrev;
+          while (hi && hi->nHeight > lo->nHeight)
+            hi = hi->pprev;
 
-            if (poIndex == pindexPrev)
-              return state.DoS(100, error("AcceptBlock() : reuse prime origin found!"));
-          }
+          if (lo == hi)
+            return state.DoS(100, error("AcceptBlock() : reuse prime origin found!"));
         }
 
         // Check proof of work
