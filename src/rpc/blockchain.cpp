@@ -96,7 +96,7 @@ UniValue blockheaderToJSON(const CBlockIndex* blockindex)
     result.push_back(Pair("difficulty", GetPrimeDifficulty(blockindex->nBits)));
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
     result.push_back(Pair("nTx", (uint64_t)blockindex->nTx));
-    CBigNum bnPrimeChainOrigin = CBigNum(blockindex->GetBlockHeader().GetHeaderHash()) * block.bnPrimeChainMultiplier;
+    CBigNum bnPrimeChainOrigin = CBigNum(blockindex->GetBlockHeader().GetHeaderHash()) * blockindex->bnPrimeChainMultiplier;
     result.push_back(Pair("primeorigin", bnPrimeChainOrigin.ToString().c_str()));
 
     if (blockindex->pprev)
