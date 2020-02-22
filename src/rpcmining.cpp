@@ -8,6 +8,7 @@
 #include "db.h"
 #include "init.h"
 #include "bitcoinrpc.h"
+#include "prime.h"
 
 using namespace json_spirit;
 using namespace std;
@@ -184,7 +185,7 @@ Value getwork(const Array& params, bool fHelp)
 
         // Get saved block
         if (!mapNewBlock.count(pdata->hashMerkleRoot))
-            return false;
+            throw JSONRPCError(RPC_MISC_ERROR, "No matching candidate block found");
         CBlock* pblock = mapNewBlock[pdata->hashMerkleRoot].first;
 
         pblock->nTime = pdata->nTime;
@@ -192,11 +193,19 @@ Value getwork(const Array& params, bool fHelp)
         pblock->vtx[0].vin[0].scriptSig = mapNewBlock[pdata->hashMerkleRoot].second;
         pblock->hashMerkleRoot = pblock->BuildMerkleTree();
 
-        // Deserialize PrimeChainMultiplier
-        unsigned char primemultiplier[48];
-        memcpy(primemultiplier, &pdata->bnPrimeChainMultiplier, 48);
-        CDataStream ssMult(BEGIN(primemultiplier), END(primemultiplier), SER_NETWORK, PROTOCOL_VERSION);
-        ssMult >> pblock->bnPrimeChainMultiplier;
+        // Prime chain multiplier is formatted inside data as an uint256, same as hashMerkleRoot
+        uint256 *pMultiplier = (uint256 *)&pdata->bnPrimeChainMultiplier;
+        pblock->bnPrimeChainMultiplier = CBigNum(*pMultiplier);
+        if (pblock->GetHeaderHash() < hashBlockHeaderLimit)
+        {
+            const std::string message = strprintf("Header hash too low for submission hash=%s multiplier=%s", pblock->GetHeaderHash().GetHex().c_str(), pblock->bnPrimeChainMultiplier.GetHex().c_str());
+            throw JSONRPCError(RPC_MISC_ERROR, message);
+        }
+        if (!CheckProofOfWork(pblock->GetHeaderHash(), pblock->nBits, pblock->bnPrimeChainMultiplier, pblock->nPrimeChainType, pblock->nPrimeChainLength))
+        {
+            const std::string message = strprintf("Insufficient work %s<%s for header hash=%s multiplier=%s", GetPrimeChainName(pblock->nPrimeChainType, pblock->nPrimeChainLength).c_str(), TargetToString(pblock->nBits).c_str(), pblock->GetHeaderHash().GetHex().c_str(), pblock->bnPrimeChainMultiplier.GetHex().c_str());
+            throw JSONRPCError(RPC_MISC_ERROR, message);
+        }
 
         return CheckWork(pblock, *pwalletMain, *pMiningKey);
     }

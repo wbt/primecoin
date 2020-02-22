@@ -278,7 +278,8 @@ bool TargetGetNext(unsigned int nBits, int64 nInterval, int64 nTargetSpacing, in
 // prime chain type and length value
 std::string GetPrimeChainName(unsigned int nChainType, unsigned int nChainLength)
 {
-    return strprintf("%s%s", (nChainType==PRIME_CHAIN_CUNNINGHAM1)? "1CC" : ((nChainType==PRIME_CHAIN_CUNNINGHAM2)? "2CC" : "TWN"), TargetToString(nChainLength).c_str());
+    const std::string strLabels[5] = {"NUL", "1CC", "2CC", "TWN", "UNK"};
+    return strprintf("%s%s", strLabels[std::min(nChainType, 4u)].c_str(), TargetToString(nChainLength).c_str());
 }
 
 // primorial form of prime chain origin
@@ -362,7 +363,7 @@ bool CheckBlockHeaderIntegrity(uint256 hashBlockHeader, unsigned int nBits, cons
         return error("CheckBlockHeaderIntegrity() : invalid chain length target %s", TargetToString(nBits).c_str());
      // Check header hash limit
     if (hashBlockHeader < hashBlockHeaderLimit)
-        return error("CheckBlockHeaderIntegrity() : block header hash under limit");
+        return error("CheckBlockHeaderIntegrity() : block header hash under limit: %s", hashBlockHeader.ToString().c_str());
     // Check target for prime proof-of-work
     CBigNum bnPrimeChainOrigin = CBigNum(hashBlockHeader) * bnPrimeChainMultiplier;
     if (bnPrimeChainOrigin < bnPrimeMin)
@@ -383,13 +384,16 @@ bool CheckBlockHeaderIntegrity(uint256 hashBlockHeader, unsigned int nBits, cons
 // Check prime proof-of-work
 bool CheckPrimeProofOfWork(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnPrimeChainMultiplier, unsigned int& nChainType, unsigned int& nChainLength)
 {
+    nChainType = 0;   // clear output chain type
+    nChainLength = 0; // clear output chain length
+
     // Check target
     if (TargetGetLength(nBits) < nTargetMinLength || TargetGetLength(nBits) > 99)
         return error("CheckPrimeProofOfWork() : invalid chain length target %s", TargetToString(nBits).c_str());
 
     // Check header hash limit
     if (hashBlockHeader < hashBlockHeaderLimit)
-        return error("CheckPrimeProofOfWork() : block header hash under limit");
+        return error("CheckPrimeProofOfWork() : block header hash under limit: %s", hashBlockHeader.ToString().c_str());
     // Check target for prime proof-of-work
     CBigNum bnPrimeChainOrigin = CBigNum(hashBlockHeader) * bnPrimeChainMultiplier;
     if (bnPrimeChainOrigin < bnPrimeMin)
@@ -403,8 +407,23 @@ bool CheckPrimeProofOfWork(uint256 hashBlockHeader, unsigned int nBits, const CB
     unsigned int nChainLengthCunningham2 = 0;
     unsigned int nChainLengthBiTwin = 0;
     if (!ProbablePrimeChainTest(bnPrimeChainOrigin, nBits, false, nChainLengthCunningham1, nChainLengthCunningham2, nChainLengthBiTwin))
+    {
+        // Despite failing the check, still return info of longest primechain from the three chain types
+        nChainLength = nChainLengthCunningham1;
+        nChainType = PRIME_CHAIN_CUNNINGHAM1;
+        if (nChainLengthCunningham2 > nChainLength)
+        {
+            nChainLength = nChainLengthCunningham2;
+            nChainType = PRIME_CHAIN_CUNNINGHAM2;
+        }
+        if (nChainLengthBiTwin > nChainLength)
+        {
+            nChainLength = nChainLengthBiTwin;
+            nChainType = PRIME_CHAIN_BI_TWIN;
+        }
         return error("CheckPrimeProofOfWork() : failed prime chain test target=%s length=(%s %s %s)", TargetToString(nBits).c_str(),
             TargetToString(nChainLengthCunningham1).c_str(), TargetToString(nChainLengthCunningham2).c_str(), TargetToString(nChainLengthBiTwin).c_str());
+    }
     if (nChainLengthCunningham1 < nBits && nChainLengthCunningham2 < nBits && nChainLengthBiTwin < nBits)
         return error("CheckPrimeProofOfWork() : prime chain length assert target=%s length=(%s %s %s)", TargetToString(nBits).c_str(),
             TargetToString(nChainLengthCunningham1).c_str(), TargetToString(nChainLengthCunningham2).c_str(), TargetToString(nChainLengthBiTwin).c_str());
