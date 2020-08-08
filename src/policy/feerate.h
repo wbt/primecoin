@@ -34,7 +34,7 @@ public:
     /**
      * Return the fee in satoshis for the given size in bytes.
      */
-    CAmount GetFee(size_t nBytes) const;
+    CAmount GetFee(size_t nBytes, bool isProtocolV1 = false) const;
     /**
      * Return the fee in satoshis for a size of 1000 bytes
      */
