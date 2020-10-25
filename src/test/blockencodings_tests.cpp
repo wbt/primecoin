@@ -43,11 +43,12 @@ static CBlock BuildBlockTestCase() {
         tx.vin[i].prevout.n = 0;
     }
     block.vtx[2] = MakeTransactionRef(tx);
+    block.bnPrimeChainMultiplier = CBigNum(1);
 
     bool mutated;
     block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
     assert(!mutated);
-    while (!CheckProofOfWork(block.GetHash(), block.nBits, Params().GetConsensus())) ++block.nNonce;
+    while (!CheckProofOfWork(block.GetHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) ++block.nNonce;
     return block;
 }
 
@@ -288,11 +289,12 @@ BOOST_AUTO_TEST_CASE(EmptyBlockRoundTripTest)
     block.nVersion = 42;
     block.hashPrevBlock = InsecureRand256();
     block.nBits = 0x207fffff;
+    block.bnPrimeChainMultiplier = CBigNum(1);
 
     bool mutated;
     block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
     assert(!mutated);
-    while (!CheckProofOfWork(block.GetHash(), block.nBits, Params().GetConsensus())) ++block.nNonce;
+    while (!CheckProofOfWork(block.GetHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) ++block.nNonce;
 
     // Test simple header round-trip with only coinbase
     {
