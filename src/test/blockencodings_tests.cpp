@@ -46,11 +46,13 @@ static CBlock BuildBlockTestCase() {
     block.bnPrimeChainMultiplier = CBigNum(2);
 
     bool mutated;
+    printf("begin mining ... ");
     while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) {
         ++block.bnPrimeChainMultiplier;
         block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
         assert(!mutated);
     }
+    printf("end mining\n");
     return block;
 }
 
@@ -283,20 +285,24 @@ BOOST_AUTO_TEST_CASE(EmptyBlockRoundTripTest)
     coinbase.vin.resize(1);
     coinbase.vin[0].scriptSig.resize(10);
     coinbase.vout.resize(1);
-    coinbase.vout[0].nValue = 42;
+    coinbase.vout[0].nValue = 1000000;
 
     CBlock block;
     block.vtx.resize(1);
     block.vtx[0] = MakeTransactionRef(std::move(coinbase));
     block.nVersion = 42;
     block.hashPrevBlock = InsecureRand256();
-    block.nBits = 0x207fffff;
-    block.bnPrimeChainMultiplier = CBigNum(1);
+    block.nBits = 0x02000000;
+    block.bnPrimeChainMultiplier = CBigNum(2);
 
     bool mutated;
-    block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
-    assert(!mutated);
-    while (!CheckProofOfWork(block.GetHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) ++block.nNonce;
+    printf("begin mining ... ");
+    while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) {
+        ++block.bnPrimeChainMultiplier;
+        block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
+        assert(!mutated);
+    }
+    printf("end mining\n");
 
     // Test simple header round-trip with only coinbase
     {
