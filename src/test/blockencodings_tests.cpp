@@ -25,13 +25,13 @@ static CBlock BuildBlockTestCase() {
     tx.vin.resize(1);
     tx.vin[0].scriptSig.resize(10);
     tx.vout.resize(1);
-    tx.vout[0].nValue = 42;
+    tx.vout[0].nValue = 1000000;
 
     block.vtx.resize(3);
     block.vtx[0] = MakeTransactionRef(tx);
     block.nVersion = 42;
     block.hashPrevBlock = InsecureRand256();
-    block.nBits = 0x207fffff;
+    block.nBits = 0x02000000;
 
     tx.vin[0].prevout.hash = InsecureRand256();
     tx.vin[0].prevout.n = 0;
@@ -43,12 +43,14 @@ static CBlock BuildBlockTestCase() {
         tx.vin[i].prevout.n = 0;
     }
     block.vtx[2] = MakeTransactionRef(tx);
-    block.bnPrimeChainMultiplier = CBigNum(1);
+    block.bnPrimeChainMultiplier = CBigNum(2);
 
     bool mutated;
-    block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
-    assert(!mutated);
-    while (!CheckProofOfWork(block.GetHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) ++block.nNonce;
+    while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) {
+        ++block.bnPrimeChainMultiplier;
+        block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
+        assert(!mutated);
+    }
     return block;
 }
 
