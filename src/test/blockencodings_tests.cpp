@@ -30,29 +30,29 @@ static CBlock BuildBlockTestCase() {
     block.vtx.resize(3);
     block.vtx[0] = MakeTransactionRef(tx);
     block.nVersion = 42;
-    block.hashPrevBlock = InsecureRand256();
+    block.hashPrevBlock = uint256S("5d41ad4ce0625da61708f857245f73b90ed68f6db5645771f606350a6168b141");
     block.nBits = 0x02000000;
 
-    tx.vin[0].prevout.hash = InsecureRand256();
+    tx.vin[0].prevout.hash = uint256S("5d41ad4ce0625da61708f857245f73b90ed68f6db5645771f606350a6168b141");
     tx.vin[0].prevout.n = 0;
     block.vtx[1] = MakeTransactionRef(tx);
 
     tx.vin.resize(10);
     for (size_t i = 0; i < tx.vin.size(); i++) {
-        tx.vin[i].prevout.hash = InsecureRand256();
+        tx.vin[i].prevout.hash = uint256S("5d41ad4ce0625da61708f857245f73b90ed68f6db5645771f606350a6168b141");
         tx.vin[i].prevout.n = 0;
     }
     block.vtx[2] = MakeTransactionRef(tx);
     block.bnPrimeChainMultiplier = CBigNum(2);
 
     bool mutated;
-    printf("begin mining ... ");
+    LogPrintf("begin mining ... ");
     while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) {
         ++block.bnPrimeChainMultiplier;
         block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
         assert(!mutated);
     }
-    printf("end mining\n");
+    LogPrintf("end mining\n");
     return block;
 }
 
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE(EmptyBlockRoundTripTest)
     block.vtx.resize(1);
     block.vtx[0] = MakeTransactionRef(std::move(coinbase));
     block.nVersion = 42;
-    block.hashPrevBlock = InsecureRand256();
+    block.hashPrevBlock = uint256S("5d41ad4ce0625da61708f857245f73b90ed68f6db5645771f606350a6168b141");
     block.nBits = 0x02000000;
     block.bnPrimeChainMultiplier = CBigNum(2);
 

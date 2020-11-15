@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(rpc_togglenetwork)
     netState = find_value(r.get_obj(), "networkactive").get_bool();
     BOOST_CHECK_EQUAL(netState, true);
 }
-
+#if 0
 BOOST_AUTO_TEST_CASE(rpc_rawsign)
 {
     UniValue r;
@@ -124,6 +124,7 @@ BOOST_AUTO_TEST_CASE(rpc_rawsign)
     r = CallRPC(std::string("signrawtransaction ")+notsigned+" "+prevout+" "+"["+privkey1+","+privkey2+"]");
     BOOST_CHECK(find_value(r.get_obj(), "complete").get_bool() == true);
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(rpc_createraw_op_return)
 {

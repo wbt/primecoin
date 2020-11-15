@@ -367,7 +367,7 @@ static void AddKey(CWallet& wallet, const CKey& key)
     LOCK(wallet.cs_wallet);
     wallet.AddKeyPubKey(key, key.GetPubKey());
 }
-
+#if 0
 BOOST_FIXTURE_TEST_CASE(rescan, TestChain100Setup)
 {
     // Cap last block file size, and mine new block in a new block file.
@@ -532,7 +532,7 @@ BOOST_FIXTURE_TEST_CASE(coin_mark_dirty_immature_credit, TestChain100Setup)
     wallet.AddKeyPubKey(coinbaseKey, coinbaseKey.GetPubKey());
     BOOST_CHECK_EQUAL(wtx.GetImmatureCredit(), 50*COIN);
 }
-
+#endif
 static int64_t AddTx(CWallet& wallet, uint32_t lockTime, int64_t mockTime, int64_t blockTime)
 {
     CMutableTransaction tx;
@@ -653,7 +653,7 @@ public:
 
     std::unique_ptr<CWallet> wallet;
 };
-
+#if 0
 BOOST_FIXTURE_TEST_CASE(ListCoins, ListCoinsTestingSetup)
 {
     std::string coinbaseAddress = coinbaseKey.GetPubKey().GetID().ToString();
@@ -698,5 +698,5 @@ BOOST_FIXTURE_TEST_CASE(ListCoins, ListCoinsTestingSetup)
     BOOST_CHECK_EQUAL(boost::get<CKeyID>(list.begin()->first).ToString(), coinbaseAddress);
     BOOST_CHECK_EQUAL(list.begin()->second.size(), 2);
 }
-
+#endif
 BOOST_AUTO_TEST_SUITE_END()
