@@ -15,18 +15,17 @@ BOOST_FIXTURE_TEST_SUITE(merkleblock_tests, BasicTestingSetup)
  * Create a CMerkleBlock using a list of txids which will be found in the
  * given block.
  */
-#if 0
 BOOST_AUTO_TEST_CASE(merkleblock_construct_from_txids_found)
 {
-    CBlock block = getBlock13b8a();
+    CBlock block = getBlockbdf80();
 
     std::set<uint256> txids;
 
     // Last txn in block.
-    uint256 txhash1 = uint256S("0x74d681e0e03bafa802c8aa084379aa98d9fcd632ddc2ed9782b586ec87451f20");
+    uint256 txhash1 = uint256S("0xfff3faab93015753622ed885a73e0f96b769cab3c789944ad5fcbf37ede1a3e3");
 
     // Second txn in block.
-    uint256 txhash2 = uint256S("0xf9fc751cb7dc372406a9f8d738d5e6f8f63bab71986a39cf36ee70ee17036d07");
+    uint256 txhash2 = uint256S("0x580309a32ed9c52f39d0a52b9602c76c95234d71c25d3a9b68170e0923ba3c4a");
 
     txids.insert(txhash1);
     txids.insert(txhash2);
@@ -49,7 +48,7 @@ BOOST_AUTO_TEST_CASE(merkleblock_construct_from_txids_found)
     BOOST_CHECK_EQUAL(vIndex[0], 1);
 
     BOOST_CHECK_EQUAL(vMatched[1].ToString(), txhash1.ToString());
-    BOOST_CHECK_EQUAL(vIndex[1], 8);
+    BOOST_CHECK_EQUAL(vIndex[1], 9);
 }
 
 
@@ -59,10 +58,10 @@ BOOST_AUTO_TEST_CASE(merkleblock_construct_from_txids_found)
  */
 BOOST_AUTO_TEST_CASE(merkleblock_construct_from_txids_not_found)
 {
-    CBlock block = getBlock13b8a();
+    CBlock block = getBlockbdf80();
 
     std::set<uint256> txids2;
-    txids2.insert(uint256S("0xc0ffee00003bafa802c8aa084379aa98d9fcd632ddc2ed9782b586ec87451f20"));
+    txids2.insert(uint256S("0xabac063581bf1aa22643e5e239c575fc8cfcbf4686a38af078ae492b801d6654"));
     CMerkleBlock merkleBlock(block, txids2);
 
     BOOST_CHECK_EQUAL(merkleBlock.header.GetHash().GetHex(), block.GetHash().GetHex());
@@ -75,5 +74,5 @@ BOOST_AUTO_TEST_CASE(merkleblock_construct_from_txids_not_found)
     BOOST_CHECK_EQUAL(vMatched.size(), 0);
     BOOST_CHECK_EQUAL(vIndex.size(), 0);
 }
-#endif
+
 BOOST_AUTO_TEST_SUITE_END()
