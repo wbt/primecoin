@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <test/test_bitcoin.h>
-
+#include <consensus/merkle.h>
 #include <chainparams.h>
 #include <consensus/consensus.h>
 #include <consensus/validation.h>
@@ -16,7 +16,7 @@
 #include <rpc/server.h>
 #include <rpc/register.h>
 #include <script/sigcache.h>
-
+#include <prime/prime.h>
 #include <memory>
 
 void CConnmanTest::AddNode(CNode& node)
@@ -110,7 +110,7 @@ TestingSetup::~TestingSetup()
         fs::remove_all(pathTemp);
 }
 
-TestChain100Setup::TestChain100Setup() : TestingSetup(CBaseChainParams::REGTEST)
+TestChain100Setup::TestChain100Setup() : TestingSetup(CBaseChainParams::TESTNET)
 {
     // CreateAndProcessBlock() does not support building SegWit blocks, so don't activate in these tests.
     // TODO: fix the code to support SegWit blocks.
@@ -148,7 +148,18 @@ TestChain100Setup::CreateAndProcessBlock(const std::vector<CMutableTransaction>&
         IncrementExtraNonce(&block, chainActive.Tip(), extraNonce);
     }
 
-    while (!CheckProofOfWork(block.GetHash(), block.nBits, block.bnPrimeChainMultiplier, chainparams.GetConsensus())) ++block.nNonce;
+    bool mutated;
+    block.nBits = 0x02000000;
+    block.bnPrimeChainMultiplier = 2;
+    block.nNonce = 0;
+    while(UintToArith256(block.GetHeaderHash()) < hashBlockHeaderLimit) {
+        ++block.nNonce;
+	}
+    while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) {
+        block.bnPrimeChainMultiplier+=2;
+        block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
+        assert(!mutated);
+    }
 
     std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(block);
     ProcessNewBlock(chainparams, shared_pblock, true, nullptr);
