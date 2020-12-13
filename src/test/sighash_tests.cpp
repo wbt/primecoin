@@ -208,5 +208,4 @@ BOOST_AUTO_TEST_CASE(sighash_from_data)
         BOOST_CHECK_MESSAGE(sh.GetHex() == sigHashHex, strTest);
     }
 }
-
 BOOST_AUTO_TEST_SUITE_END()
