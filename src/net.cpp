@@ -1615,7 +1615,7 @@ void CConnman::ThreadDNSAddressSeed()
             std::vector<CNetAddr> vIPs;
             std::vector<CAddress> vAdd;
             ServiceFlags requiredServiceBits = GetDesirableServiceFlags(NODE_NONE);
-            std::string host = strprintf("x%x.%s", requiredServiceBits, seed);
+            std::string host = strprintf("%s", seed); // ServiceBits not yet supported
             CNetAddr resolveSource;
             if (!resolveSource.SetInternal(host)) {
                 continue;
