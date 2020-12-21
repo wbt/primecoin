@@ -112,13 +112,13 @@ BOOST_AUTO_TEST_CASE(rpc_rawsign)
     // input is a 1-of-2 multisig (so is output):
     std::string prevout =
       "[{\"txid\":\"b4cc287e58f87cdae59417329f710f3ecd75a4ee1d2872b7248f50977c8493f3\","
-      "\"vout\":1,\"scriptPubKey\":\"a9148a8c0d8e256627bfd0f7957669afb548142c1af187\","
-      "\"redeemScript\":\"5221026bd5c486de8473e1a08244be296c773d8eacaefcdf2c0a06823e210ac76b1bd22103838a0d06943b618d39ef9dbb532f7b88d8d127406ec0eccc6390e43fd6a462e752ae\"}]";
+      "\"vout\":1,\"scriptPubKey\":\"a91403ae89e192cfb401a3401067b5242badfe9de4e887\","
+      "\"redeemScript\":\"522102164ca9e678e396fe823ba4db89a370f6ba86e5ce822031d24310a014e52c24e0210272b2f2c0b865e6640a8a5f78b6ba10472fbb4fb169ea501baf6d9a314cda5d3d52ae\"}]";
     r = CallRPC(std::string("createrawtransaction ")+prevout+" "+
-      "{\"acgdkY2WpjXAThTEYZKyvtZx3Fzr5SwFXm\":11}");
+      "{\"2Msah71krJaJxs7ej2fnUvS3KsGDx8Pg36f\":11}");
     std::string notsigned = r.get_str();
-    std::string privkey1 = "\"PStkth92HaiqLg8TZe1Zv32DXNeFTe9W6X9HsLjt9HjH9LQkPzYA\"";
-    std::string privkey2 = "\"PUz8kYge1pCPXyLftwUyd2L1ZYqYJMYZZmcQsRaRBSit5Q5qKWou\"";
+    std::string privkey1 = "\"cTLvYMmRQzBZUtYfxCwVAtVDcQxkpYsQHkrYWzoAQMSvh67D7akK\"";
+    std::string privkey2 = "\"cMtHHbZ22XcWzN4ajL2U1eGT3iyUksBHD2ZupzmpKEJSAGbXXzFY\"";
     r = CallRPC(std::string("signrawtransaction ")+notsigned+" "+prevout+" "+"[]");
     BOOST_CHECK(find_value(r.get_obj(), "complete").get_bool() == false);
     r = CallRPC(std::string("signrawtransaction ")+notsigned+" "+prevout+" "+"["+privkey1+","+privkey2+"]");
@@ -256,14 +256,14 @@ BOOST_AUTO_TEST_CASE(rpc_ban)
     ar = r.get_array();
     BOOST_CHECK_EQUAL(ar.size(), 0);
 
-    BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 127.0.0.0/24 add 1607731200 true")));
+    BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 127.0.0.0/24 add 32503683661 true"))); // time of future
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
     ar = r.get_array();
     o1 = ar[0].get_obj();
     adr = find_value(o1, "address");
     UniValue banned_until = find_value(o1, "banned_until");
     BOOST_CHECK_EQUAL(adr.get_str(), "127.0.0.0/24");
-    BOOST_CHECK_EQUAL(banned_until.get_int64(), 1607731200); // absolute time check
+    BOOST_CHECK_EQUAL(banned_until.get_int64(), 32503683661); // absolute time check
 
     BOOST_CHECK_NO_THROW(CallRPC(std::string("clearbanned")));
 

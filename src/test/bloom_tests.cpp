@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(bloom_create_insert_serialize_with_tweak)
 
 BOOST_AUTO_TEST_CASE(bloom_create_insert_key)
 {
-    std::string strSecret = std::string("65uBi5AxLhZH87eAENQ5RaoX5zi82X8oY4cPdE6asZR9JWk7GBW");
+    std::string strSecret = std::string("93SeGWzHAZjTh1Cz2AALv1DPKh7ok6x7vg15Npugu8pVgVAzKyk");
     CBitcoinSecret vchSecret;
     BOOST_CHECK(vchSecret.SetString(strSecret));
 
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(bloom_create_insert_key)
     CDataStream stream(SER_NETWORK, PROTOCOL_VERSION);
     stream << filter;
 
-    std::vector<unsigned char> vch = ParseHex("03f969c2080000000000000001");
+    std::vector<unsigned char> vch = ParseHex("038fc16b080000000000000001");
     std::vector<char> expected(vch.size());
 
     for (unsigned int i = 0; i < vch.size(); i++)
