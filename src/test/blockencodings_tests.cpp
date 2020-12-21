@@ -46,13 +46,11 @@ static CBlock BuildBlockTestCase() {
     block.bnPrimeChainMultiplier = CBigNum(2);
 
     bool mutated;
-    LogPrintf("begin mining ... ");
     while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) {
         ++block.bnPrimeChainMultiplier;
         block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
         assert(!mutated);
     }
-    LogPrintf("end mining\n");
     return block;
 }
 
@@ -296,13 +294,11 @@ BOOST_AUTO_TEST_CASE(EmptyBlockRoundTripTest)
     block.bnPrimeChainMultiplier = CBigNum(2);
 
     bool mutated;
-    printf("begin mining ... ");
     while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) {
         ++block.bnPrimeChainMultiplier;
         block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
         assert(!mutated);
     }
-    printf("end mining\n");
 
     // Test simple header round-trip with only coinbase
     {

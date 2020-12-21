@@ -35,7 +35,6 @@ static void TestBlockSubsidy(const Consensus::Params& consensusParams)
     for (std::map<int, CAmount>::iterator it=subsidy.begin(); it!=subsidy.end(); ++it) {
         CAmount nSubsidy = GetBlockSubsidy(it->first, consensusParams);
         BOOST_CHECK_EQUAL(nSubsidy, it->second);
-        printf("0x%ld, %ld\n", nSubsidy, it->second);
     }
 }
 
