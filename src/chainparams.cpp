@@ -140,15 +140,19 @@ public:
         
         assert(consensus.hashGenesisBlock 	== uint256S("0x963d17ba4dc753138078a2f56afb3af9674e2546822badff26837db9a0152106"));
         assert(genesis.hashMerkleRoot 		== uint256S("0xaca30eb61dffbb9412d0ae743c3d74554f710853daec40ebd2514e830e05c9ff"));
-        
+
+        vSeeds.emplace_back("seed.primecoin.info");
+        vSeeds.emplace_back("primeseed.muuttuja.org");
+        vSeeds.emplace_back("seed.primecoin.org");
+        vSeeds.emplace_back("xpm.dnsseed.coinsforall.io");
+
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,23);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,83);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,151);
-        // TODO: BTC -> XPM
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
 
-        bech32_hrp = "bc";
+        bech32_hrp = "pm";
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
 
@@ -229,13 +233,14 @@ public:
         assert(consensus.hashGenesisBlock == uint256S("0x221156cf301bc3585e72de34fe1efdb6fbd703bc27cfc468faa1cdd889d0efa0"));
         assert(genesis.hashMerkleRoot == uint256S("0xaca30eb61dffbb9412d0ae743c3d74554f710853daec40ebd2514e830e05c9ff"));
 
-        vFixedSeeds.clear();
-        vSeeds.clear();
+        vSeeds.emplace_back("testseed.primecoin.info");
+        vSeeds.emplace_back("primeseedtn.muuttuja.org");
+        vSeeds.emplace_back("seed.testnet.primecoin.org");
+        vSeeds.emplace_back("xpmtestnet.dnsseed.coinsforall.io");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
-        // TODO: BTC -> XPM
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 
