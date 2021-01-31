@@ -29,6 +29,7 @@
 #include <memory>
 #include <stdint.h>
 #include <prime/prime.h>
+#include <wallet/wallet.h>
 unsigned int ParseConfirmTarget(const UniValue& value)
 {
     int target = value.get_int();
@@ -365,9 +366,14 @@ UniValue getwork(const JSONRPCRequest& request)
             nStart = GetTime();
 
             // Create new block
-            CScript scriptDummy = CScript() << OP_TRUE;
+            std::shared_ptr<CReserveScript> coinbase_script;
+            if(!vpwallets.empty()) {
+                vpwallets[0]->GetScriptForMining(coinbase_script);
+            } else {
+                throw JSONRPCError(RPC_MISC_ERROR, "Only support getblocktemplate/submitblock API for mining");
+            }
             bool fSupportsSegwit = IsWitnessEnabled(pindexPrev, Params().GetConsensus());
-            pblocktemplate = BlockAssembler(Params()).CreateNewBlock(scriptDummy, fSupportsSegwit);
+            pblocktemplate = BlockAssembler(Params()).CreateNewBlock(coinbase_script->reserveScript, fSupportsSegwit);
             if (!pblocktemplate)
                 throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
 
@@ -720,7 +726,11 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
 
         // Create new block
         CScript scriptDummy = CScript() << OP_TRUE;
-        pblocktemplate = BlockAssembler(Params()).CreateNewBlock(scriptDummy, fSupportsSegwit);
+        std::shared_ptr<CReserveScript> coinbase_script;
+        if(!vpwallets.empty()) {
+            vpwallets[0]->GetScriptForMining(coinbase_script);
+        }
+        pblocktemplate = BlockAssembler(Params()).CreateNewBlock(vpwallets.empty() ? scriptDummy : coinbase_script->reserveScript, fSupportsSegwit);
         if (!pblocktemplate)
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
 
