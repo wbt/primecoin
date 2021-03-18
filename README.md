@@ -69,7 +69,24 @@ submit new unit tests for old code.
 
 Unit tests for the core code are in `src/test/`. To compile and run them:
 
-    cd src; make -f makefile.unix test
+    sudo apt-get update
+    sudo apt-get install build-essential
+    sudo apt-get install -y build-essential autoconf libtool pkg-config libboost-all-dev libssl-dev libevent-dev libqt5gui5 libqt5core5a libqt5dbus5 qttools5-dev qttools5-dev-tools libprotobuf-dev protobuf-compiler libqrencode-dev libminiupnpc-dev curl
+    git clone https://github.com/primecoin/primecoin.git
+    cd primecoin
+
+    (In ubuntu 20.04)
+    cd depends; make
+    export BOOST_INCLUDE_PATH=`pwd`/x86_64-pc-linux-gnu/include
+    export BDB_INCLUDE_PATH=`pwd`/x86_64-pc-linux-gnu/include
+    export OPENSSL_INCLUDE_PATH=`pwd`/x86_64-pc-linux-gnu/include
+    export BOOST_LIB_PATH=`pwd`/x86_64-pc-linux-gnu/lib
+    export BOOST_LIB_SUFFIX=-mt
+    cd ..
+    cd src ; make -f makefile.unix USE_UPNP:=
+
+    (For other systems)
+    cd src ; make -f makefile.unix
 
 Unit tests for the GUI code are in `src/qt/test/`. To compile and run them:
 
