@@ -19,6 +19,7 @@
 #include <primitives/transaction.h>
 #include <rpc/safemode.h>
 #include <rpc/server.h>
+#include <rpc/addresstransaction.h>
 #include <script/script.h>
 #include <script/script_error.h>
 #include <script/sign.h>
@@ -1044,7 +1045,9 @@ static const CRPCCommand commands[] =
     { "rawtransactions",    "sendrawtransaction",     &sendrawtransaction,     {"hexstring","allowhighfees"} },
     { "rawtransactions",    "combinerawtransaction",  &combinerawtransaction,  {"txs"} },
     { "rawtransactions",    "signrawtransaction",     &signrawtransaction,     {"hexstring","prevtxs","privkeys","sighashtype"} }, /* uses wallet if enabled */
-
+    { "addressindex",       "searchrawtransactions",  &searchrawtransactions,  {"address","verbose","skip","count"}  },
+    { "addressindex",       "searchutxos",            &searchutxos,  {"address","verbose","skip","count"}  },
+    { "addressindex",       "getaddressbalance",      &getaddressbalance,      {"address"} },
     { "blockchain",         "gettxoutproof",          &gettxoutproof,          {"txids", "blockhash"} },
     { "blockchain",         "verifytxoutproof",       &verifytxoutproof,       {"proof"} },
 };
