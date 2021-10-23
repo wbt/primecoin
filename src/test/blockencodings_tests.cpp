@@ -25,29 +25,32 @@ static CBlock BuildBlockTestCase() {
     tx.vin.resize(1);
     tx.vin[0].scriptSig.resize(10);
     tx.vout.resize(1);
-    tx.vout[0].nValue = 42;
+    tx.vout[0].nValue = 1000000;
 
     block.vtx.resize(3);
     block.vtx[0] = MakeTransactionRef(tx);
     block.nVersion = 42;
-    block.hashPrevBlock = InsecureRand256();
-    block.nBits = 0x207fffff;
+    block.hashPrevBlock = uint256S("5d41ad4ce0625da61708f857245f73b90ed68f6db5645771f606350a6168b141");
+    block.nBits = 0x02000000;
 
-    tx.vin[0].prevout.hash = InsecureRand256();
+    tx.vin[0].prevout.hash = uint256S("5d41ad4ce0625da61708f857245f73b90ed68f6db5645771f606350a6168b141");
     tx.vin[0].prevout.n = 0;
     block.vtx[1] = MakeTransactionRef(tx);
 
     tx.vin.resize(10);
     for (size_t i = 0; i < tx.vin.size(); i++) {
-        tx.vin[i].prevout.hash = InsecureRand256();
+        tx.vin[i].prevout.hash = uint256S("5d41ad4ce0625da61708f857245f73b90ed68f6db5645771f606350a6168b141");
         tx.vin[i].prevout.n = 0;
     }
     block.vtx[2] = MakeTransactionRef(tx);
+    block.bnPrimeChainMultiplier = CBigNum(2);
 
     bool mutated;
-    block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
-    assert(!mutated);
-    while (!CheckProofOfWork(block.GetHash(), block.nBits, Params().GetConsensus())) ++block.nNonce;
+    while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) {
+        ++block.bnPrimeChainMultiplier;
+        block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
+        assert(!mutated);
+    }
     return block;
 }
 
@@ -280,19 +283,22 @@ BOOST_AUTO_TEST_CASE(EmptyBlockRoundTripTest)
     coinbase.vin.resize(1);
     coinbase.vin[0].scriptSig.resize(10);
     coinbase.vout.resize(1);
-    coinbase.vout[0].nValue = 42;
+    coinbase.vout[0].nValue = 1000000;
 
     CBlock block;
     block.vtx.resize(1);
     block.vtx[0] = MakeTransactionRef(std::move(coinbase));
     block.nVersion = 42;
-    block.hashPrevBlock = InsecureRand256();
-    block.nBits = 0x207fffff;
+    block.hashPrevBlock = uint256S("5d41ad4ce0625da61708f857245f73b90ed68f6db5645771f606350a6168b141");
+    block.nBits = 0x02000000;
+    block.bnPrimeChainMultiplier = CBigNum(2);
 
     bool mutated;
-    block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
-    assert(!mutated);
-    while (!CheckProofOfWork(block.GetHash(), block.nBits, Params().GetConsensus())) ++block.nNonce;
+    while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) {
+        ++block.bnPrimeChainMultiplier;
+        block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
+        assert(!mutated);
+    }
 
     // Test simple header round-trip with only coinbase
     {

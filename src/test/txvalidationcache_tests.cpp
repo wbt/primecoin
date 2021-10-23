@@ -22,7 +22,7 @@
 bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsViewCache &inputs, bool fScriptChecks, unsigned int flags, bool cacheSigStore, bool cacheFullScriptStore, PrecomputedTransactionData& txdata, std::vector<CScriptCheck> *pvChecks);
 
 BOOST_AUTO_TEST_SUITE(tx_validationcache_tests)
-
+#if 0
 static bool
 ToMemPool(CMutableTransaction& tx)
 {
@@ -367,5 +367,5 @@ BOOST_FIXTURE_TEST_CASE(checkinputs_test, TestChain100Setup)
         BOOST_CHECK_EQUAL(scriptchecks.size(), 2);
     }
 }
-
+#endif
 BOOST_AUTO_TEST_SUITE_END()
