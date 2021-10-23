@@ -161,7 +161,7 @@ TestChain100Setup::CreateAndProcessBlock(const std::vector<CMutableTransaction>&
     while(UintToArith256(block.GetHeaderHash()) < hashBlockHeaderLimit) {
         ++block.nNonce;
 	}
-    while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) {
+    while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, block.nPrimeChainType, block.nPrimeChainLength, Params().GetConsensus())) {
         block.bnPrimeChainMultiplier+=2;
         block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
         assert(!mutated);

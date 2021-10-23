@@ -46,7 +46,7 @@ static CBlock BuildBlockTestCase() {
     block.bnPrimeChainMultiplier = CBigNum(2);
 
     bool mutated;
-    while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) {
+    while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, block.nPrimeChainType, block.nPrimeChainLength, Params().GetConsensus())) {
         ++block.bnPrimeChainMultiplier;
         block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
         assert(!mutated);
@@ -294,7 +294,7 @@ BOOST_AUTO_TEST_CASE(EmptyBlockRoundTripTest)
     block.bnPrimeChainMultiplier = CBigNum(2);
 
     bool mutated;
-    while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, Params().GetConsensus())) {
+    while (!CheckProofOfWork(block.GetHeaderHash(), block.nBits, block.bnPrimeChainMultiplier, block.nPrimeChainType, block.nPrimeChainLength, Params().GetConsensus())) {
         ++block.bnPrimeChainMultiplier;
         block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
         assert(!mutated);
