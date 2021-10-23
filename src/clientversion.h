@@ -38,8 +38,8 @@
 // primecoin client version - intended for display purpose ONLY
 #define PRIMECOIN_VERSION_MAJOR       0
 #define PRIMECOIN_VERSION_MINOR       1
-#define PRIMECOIN_VERSION_REVISION    5
-#define PRIMECOIN_VERSION_BUILD       0
+#define PRIMECOIN_VERSION_REVISION    6
+#define PRIMECOIN_VERSION_BUILD       1
 
 static const int CLIENT_VERSION =
                            1000000 * CLIENT_VERSION_MAJOR

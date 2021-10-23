@@ -38,8 +38,8 @@ static CBlock BuildBlockTestCase() {
     block.vtx[1] = MakeTransactionRef(tx);
 
     tx.vin.resize(10);
-    for (size_t i = 0; i < tx.vin.size(); i++) {
-        tx.vin[i].prevout.hash = uint256S("5d41ad4ce0625da61708f857245f73b90ed68f6db5645771f606350a6168b141");
+    for (size_t i = 1; i < tx.vin.size(); i++) {
+        tx.vin[i].prevout.hash = uint256S("5d41ad4ce0625da61708f857245f73b90ed68f6db5645771f606350a6168b1" + std::to_string(i));
         tx.vin[i].prevout.n = 0;
     }
     block.vtx[2] = MakeTransactionRef(tx);
