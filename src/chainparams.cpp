@@ -88,9 +88,9 @@ public:
     CMainParams() {
         strNetworkID = "main";
         consensus.nSubsidyHalvingInterval = 210000;
-        consensus.BIP16Height = 99999999; // 00000000000000ce80a7e057163a4db1d5ad7b20fb6f598c9597b9665c8fb0d4 - April 1, 2012
-        consensus.BIP34Height = 99999999;
-        consensus.BIP34Hash = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8");
+        consensus.BIP16Height = 0; // 963d17ba4dc753138078a2f56afb3af9674e2546822badff26837db9a0152106
+        consensus.BIP34Height = 0;
+        consensus.BIP34Hash = uint256S("0x963d17ba4dc753138078a2f56afb3af9674e2546822badff26837db9a0152106");
         consensus.BIP65Height = 99999999;
         consensus.BIP66Height = 99999999;
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
