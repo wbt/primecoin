@@ -13,9 +13,9 @@
 #include <test/test_bitcoin.h>
 #include <validation.h>
 #include <validationinterface.h>
-
+#include <prime/prime.h>
 struct RegtestingSetup : public TestingSetup {
-    RegtestingSetup() : TestingSetup(CBaseChainParams::REGTEST) {}
+    RegtestingSetup() : TestingSetup(CBaseChainParams::TESTNET) {}
 };
 
 BOOST_FIXTURE_TEST_SUITE(validation_block_tests, RegtestingSetup)
@@ -57,10 +57,12 @@ std::shared_ptr<CBlock> Block(const uint256& prev_hash)
     auto ptemplate = BlockAssembler(Params()).CreateNewBlock(pubKey, false);
     auto pblock = std::make_shared<CBlock>(ptemplate->block);
     pblock->hashPrevBlock = prev_hash;
-    pblock->nTime = ++time;
+    time += + 50000;
+    pblock->nTime = time;
 
     CMutableTransaction txCoinbase(*pblock->vtx[0]);
     txCoinbase.vout.resize(1);
+    txCoinbase.vout[0].nValue = COIN;
     txCoinbase.vin[0].scriptWitness.SetNull();
     pblock->vtx[0] = MakeTransactionRef(std::move(txCoinbase));
 
@@ -70,9 +72,15 @@ std::shared_ptr<CBlock> Block(const uint256& prev_hash)
 std::shared_ptr<CBlock> FinalizeBlock(std::shared_ptr<CBlock> pblock)
 {
     pblock->hashMerkleRoot = BlockMerkleRoot(*pblock);
+    while(UintToArith256(pblock->GetHeaderHash()) < hashBlockHeaderLimit) {
+        ++pblock->nNonce;
+	}
 
-    while (!CheckProofOfWork(pblock->GetHash(), pblock->nBits, pblock->bnPrimeChainMultiplier, pblock->nPrimeChainType, pblock->nPrimeChainLength, Params().GetConsensus())) {
-        ++(pblock->nNonce);
+    bool mutated;
+    while (!CheckProofOfWork(pblock->GetHeaderHash(), pblock->nBits, pblock->bnPrimeChainMultiplier, pblock->nPrimeChainType, pblock->nPrimeChainLength, Params().GetConsensus())) {
+        ++pblock->bnPrimeChainMultiplier;
+        pblock->hashMerkleRoot = BlockMerkleRoot(*pblock, &mutated);
+        assert(!mutated);
     }
 
     return pblock;
@@ -123,9 +131,9 @@ BOOST_AUTO_TEST_CASE(processnewblock_signals_ordering)
 {
     // build a large-ish chain that's likely to have some forks
     std::vector<std::shared_ptr<const CBlock>> blocks;
-    while (blocks.size() < 50) {
+    while (blocks.size() < 10) {
         blocks.clear();
-        BuildChain(Params().GenesisBlock().GetHash(), 100, 15, 10, 500, blocks);
+        BuildChain(Params().GenesisBlock().GetHash(), 10, 15, 10, 500, blocks);
     }
 
     bool ignored;
