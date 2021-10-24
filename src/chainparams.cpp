@@ -317,7 +317,7 @@ public:
         pchMessageStart[1] = 0xbf;
         pchMessageStart[2] = 0xb5;
         pchMessageStart[3] = 0xda;
-        nDefaultPort = 19944;
+        nDefaultPort = 9915;
         nPruneAfterHeight = 1000;
 
         const CBigNum bnPrimeChainMultiplier = ((uint64_t) 585641) * (uint64_t)(2 * 3 * 5 * 7 * 11 * 13 * 17 * 19 * 23);
