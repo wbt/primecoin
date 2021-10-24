@@ -15,7 +15,7 @@
 #include <validationinterface.h>
 #include <prime/prime.h>
 struct RegtestingSetup : public TestingSetup {
-    RegtestingSetup() : TestingSetup(CBaseChainParams::TESTNET) {}
+    RegtestingSetup() : TestingSetup(CBaseChainParams::REGTEST) {}
 };
 
 BOOST_FIXTURE_TEST_SUITE(validation_block_tests, RegtestingSetup)
