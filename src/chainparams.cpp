@@ -178,6 +178,9 @@ public:
                         //   (the tx=... number in the SetBestChain debug.log lines)
             0.03         // * estimated number of transactions per second after that timestamp
         };
+
+        // Deployment of upgrade fee rule, destroy fee
+        consensus.RFC2Height = 99999999; // to be determined
     }
 };
 
@@ -192,8 +195,8 @@ public:
         consensus.BIP16Height = 0; // 221156cf301bc3585e72de34fe1efdb6fbd703bc27cfc468faa1cdd889d0efa0
         consensus.BIP34Height = 0;
         consensus.BIP34Hash = uint256S("0x221156cf301bc3585e72de34fe1efdb6fbd703bc27cfc468faa1cdd889d0efa0");
-        consensus.BIP65Height = 3013321; // twin prime (3013319, 3013321)
-        consensus.BIP66Height = 3013319;
+        consensus.BIP65Height = 3050777; // approximate December 19, 2021
+        consensus.BIP66Height = 3050777;
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 7 * 24 * 60 * 60; // a week
         consensus.nPowTargetSpacing = 60;
@@ -270,6 +273,9 @@ public:
             1484979,
             0.01
         };
+
+        // Deployment of upgrade fee rule, destroy fee
+        consensus.RFC2Height = 3050777; // approximate December 19, 2021
 
     }
 };

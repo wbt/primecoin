@@ -1907,6 +1907,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
     blockundo.vtxundo.reserve(block.vtx.size() - 1);
     std::vector<PrecomputedTransactionData> txdata;
     txdata.reserve(block.vtx.size()); // Required so that pointers to individual PrecomputedTransactionData don't get invalidated
+    CAmount nCoinbaseFee = 0;
     for (unsigned int i = 0; i < block.vtx.size(); i++)
     {
         const CTransaction &tx = *(block.vtx[i]);
@@ -1915,17 +1916,24 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
 
         if (!tx.IsCoinBase())
         {
-            CAmount txfee = 0;
-            if (!Consensus::CheckTxInputs(tx, state, view, pindex->nHeight, txfee)) {
+            CAmount nTxFee = 0;
+            if (!Consensus::CheckTxInputs(tx, state, view, pindex->nHeight, nTxFee)) {
                 return error("%s: Consensus::CheckTxInputs: %s, %s", __func__, tx.GetHash().ToString(), FormatStateMessage(state));
             }
 
-            size_t nSize = ::GetSerializeSize(tx, SER_DISK, CLIENT_VERSION);
-            if(txfee < ::minProtocolTxFeeV1.GetFee(nSize, true)) {
-                return state.DoS(0, false, REJECT_INSUFFICIENTFEE, "min transaction fee not met");
+            size_t nSize = ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS);
+            CAmount nMinTxFee;
+            if(pindex->nHeight >= chainparams.GetConsensus().RFC2Height) {
+                nMinTxFee = ::minProtocolTxFee.GetFee(nSize);
+            } else {
+                nMinTxFee = ::minProtocolTxFeeV1.GetFee(nSize, true);
+            }
+            if(nTxFee < nMinTxFee) {
+                return state.DoS(0, error("%s: min transaction fee not met (actual=%d vs min=%d）", __func__, nTxFee, nMinTxFee),
+                                 REJECT_INVALID, "bad-txns-insuffcient-fee");
             }
 
-            nFees += txfee;
+            nFees += nTxFee;
             if (!MoneyRange(nFees)) {
                 return state.DoS(100, error("%s: accumulated fee in the block out of range.", __func__),
                                  REJECT_INVALID, "bad-txns-accumulated-fee-outofrange");
@@ -1942,6 +1950,11 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
             if (!SequenceLocks(tx, nLockTimeFlags, &prevheights, *pindex)) {
                 return state.DoS(100, error("%s: contains a non-BIP68-final transaction", __func__),
                                  REJECT_INVALID, "bad-txns-nonfinal");
+            }
+        } else {
+            size_t nSize = ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS);
+            if(pindex->nHeight >= chainparams.GetConsensus().RFC2Height) {
+                nCoinbaseFee = ::minProtocolTxFee.GetFee(nSize);
             }
         }
 
@@ -1974,7 +1987,12 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
     int64_t nTime3 = GetTimeMicros(); nTimeConnect += nTime3 - nTime2;
     LogPrint(BCLog::BENCH, "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs (%.2fms/blk)]\n", (unsigned)block.vtx.size(), MILLI * (nTime3 - nTime2), MILLI * (nTime3 - nTime2) / block.vtx.size(), nInputs <= 1 ? 0 : MILLI * (nTime3 - nTime2) / (nInputs-1), nTimeConnect * MICRO, nTimeConnect * MILLI / nBlocksTotal);
 
-    CAmount blockReward = nFees + GetBlockSubsidy(pindex->nBits, chainparams.GetConsensus());
+    CAmount blockReward = GetBlockSubsidy(pindex->nBits, chainparams.GetConsensus());
+    if(pindex->nHeight >= chainparams.GetConsensus().RFC2Height) {
+        blockReward -= nCoinbaseFee; // destroy fee and charge for coinbase tx
+    } else {
+        blockReward += nFees;
+    }
     if (block.vtx[0]->GetValueOut() > blockReward)
         return state.DoS(100,
                          error("ConnectBlock(): coinbase pays too much (actual=%d vs limit=%d)",
