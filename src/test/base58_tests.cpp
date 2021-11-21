@@ -84,7 +84,6 @@ BOOST_AUTO_TEST_CASE(base58_keys_valid_parse)
     for (unsigned int idx = 0; idx < tests.size(); idx++) {
         UniValue test = tests[idx];
         std::string strTest = test.write();
-        printf("to test %s\n", strTest.c_str());
         if (test.size() < 3) { // Allow for extra stuff (useful for comments)
             BOOST_ERROR("Bad test: " << strTest);
             continue;
