@@ -99,6 +99,6 @@ std::string FormatSubVersion(const std::string& name, int nClientVersion, const 
     }
     ss << "/";
     ss << "Primecoin:" << FormatVersion(PRIMECOIN_VERSION);
-    ss << "/";
+    ss << "(" << CLIENT_BUILD << ")/";
     return ss.str();
 }
