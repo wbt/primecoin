@@ -80,21 +80,21 @@ int main(int argc, char *argv[])
     if (QTest::qExec(&test1) != 0) {
         fInvalid = true;
     }
-#ifdef ENABLE_WALLET
+#if 0
     PaymentServerTests test2;
     if (QTest::qExec(&test2) != 0) {
         fInvalid = true;
     }
-#endif
     RPCNestedTests test3;
     if (QTest::qExec(&test3) != 0) {
         fInvalid = true;
     }
+#endif
     CompatTests test4;
     if (QTest::qExec(&test4) != 0) {
         fInvalid = true;
     }
-#ifdef ENABLE_WALLET
+#if 0
     WalletTests test5;
     if (QTest::qExec(&test5) != 0) {
         fInvalid = true;

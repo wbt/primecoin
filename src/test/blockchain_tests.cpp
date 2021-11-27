@@ -58,27 +58,27 @@ BOOST_FIXTURE_TEST_SUITE(blockchain_difficulty_tests, BasicTestingSetup)
 
 BOOST_AUTO_TEST_CASE(get_difficulty_for_very_low_target)
 {
-    TestDifficulty(0x1f111111, 0.000001);
+    TestDifficulty(0x02111111, 2.0666666626930237);
 }
 
 BOOST_AUTO_TEST_CASE(get_difficulty_for_low_target)
 {
-    TestDifficulty(0x1ef88f6f, 0.000016);
+    TestDifficulty(0x05e2f4ee, 5.886549830436707);
 }
 
 BOOST_AUTO_TEST_CASE(get_difficulty_for_mid_target)
 {
-    TestDifficulty(0x1df88f6f, 0.004023);
+    TestDifficulty(0x0a792575, 10.47322779893875);
 }
 
 BOOST_AUTO_TEST_CASE(get_difficulty_for_high_target)
 {
-    TestDifficulty(0x1cf88f6f, 1.029916);
+    TestDifficulty(0x0b4f6b3b, 11.31022995710373);
 }
 
 BOOST_AUTO_TEST_CASE(get_difficulty_for_very_high_target)
 {
-    TestDifficulty(0x12345678, 5913134931067755359633408.0);
+    TestDifficulty(0x0b8a86a7, 11.54111713171005);
 }
 
 // Verify that difficulty is 1.0 for an empty chain.
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(get_difficulty_for_null_tip)
 {
     CChain chain;
     double difficulty = GetDifficulty(chain, nullptr);
-    RejectDifficultyMismatch(difficulty, 1.0);
+    RejectDifficultyMismatch(difficulty, 256.000000);
 }
 
 /* Verify that if difficulty is based upon the block index
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(get_difficulty_for_null_block_index)
     double difficulty = GetDifficulty(chain, nullptr);
     delete chain.Tip();
 
-    double expected_difficulty = 0.004023;
+    double expected_difficulty = 29.970939;
 
     RejectDifficultyMismatch(difficulty, expected_difficulty);
 }
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(get_difficulty_for_block_index_overrides_tip)
     delete chain.Tip();
     delete override_block_index;
 
-    RejectDifficultyMismatch(difficulty, 5913134931067755359633408.0);
+    RejectDifficultyMismatch(difficulty, 18.204444);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
